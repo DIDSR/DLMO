@@ -85,7 +85,7 @@ allreduce_batch_size = batch_size * batches_per_allreduce
 test_data_path = args.test_path
 cnn_model_name = args.test_cnn_denoiser
 
-output_path = "/projects01/didsr-aiml/zitong.yu/DLMO_demo/DLMO_test/dlmo_predictions/acc" + str(acceleration) + "/"
+output_path = "./dlmo_predictions/acc" + str(acceleration) + "/"
 if not os.path.isdir(output_path): os.makedirs(output_path, exist_ok=True)
 
 dim1, dim2 = 260, 311
@@ -166,7 +166,7 @@ if not args.is_cnn_denoised:
 else:
     test_data_file = test_data_path + "/" + \
                      cnn_model_name + "_" + task_type + "_acc_" + str(acceleration) + "/" + \
-                     "preds_hvdrnk0.npy"
+                     "preds.npy"
     if hvd.rank() == 0: print("\nReading the test dataset from: " + test_data_file, flush=True)
 
     test_dataset = DatasetFromNpz(test_data_file)

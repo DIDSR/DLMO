@@ -39,11 +39,17 @@ host_node=$SLURMD_NODENAME
 ACC=$SLURM_ARRAY_TASK_ID
 
 
-TEST_PATH=/projects01/didsr-aiml/zitong.yu/DLMO_demo/synthetic_data_generation/examples/img_w_signal/
-TRAINED_MODEL_PATH=/projects01/didsr-aiml/zitong.yu/DLMO_demo/DLMO_test/trained_model/mri_cnn_io_acc_${ACC}_hvd/hvd_cpts/
-#TRAINED_MODEL_PATH=/projects01/didsr-aiml/zitong.yu/DLMO_demo/DLMO_test/trained_model/mri_cnn_io_acc_1_hvd/hvd_cpts/
+TEST_PATH=../synthetic_data_generation/examples/img_w_signal/
+TRAINED_MODEL_PATH=./trained_model/mri_cnn_io_acc_${ACC}_hvd/hvd_cpts/
+#TRAINED_MODEL_PATH=./trained_model/mri_cnn_io_acc_${ACC}_unet_hvd/hvd_cpts/
+
+# Transfer-learned models
 EPOCH=50
-PY_FILE=/projects01/didsr-aiml/zitong.yu/DLMO_demo/DLMO_test/dlmo_test_hvd.py
+
+# Based model
+#EPOCH=170
+
+PY_FILE=dlmo_test_hvd.py
 
 horovodrun -np 1 -H localhost:1 python ${PY_FILE} --task rayleigh \
 --test-path $TEST_PATH \

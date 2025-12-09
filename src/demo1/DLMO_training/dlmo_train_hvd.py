@@ -84,10 +84,10 @@ pretrained_model_epoch = args.pretrained_model_epoch
 epoch_start = 0
 max_epochs = 200
 
-train_data_path = "/projects01/didsr-aiml/zitong.yu/DLMO/data/train/"
-val_data_path = "/projects01/didsr-aiml/zitong.yu/DLMO/data/test/"
+train_data_path = "./train_data/"
+val_data_path = "./test_data/"
 
-output_path = "/projects01/didsr-aiml/zitong.yu/DLMO/src/dlmo/trained_model/mri_" + task_type + "_acc_" + str(acceleration) + "_hvd/"
+output_path = "../DLMO_test/trained_model/mri_" + task_type + "_acc_" + str(acceleration) + "_hvd/"
 if not os.path.isdir(output_path): os.makedirs(output_path, exist_ok=True)
 
 dim1, dim2 = 260, 311

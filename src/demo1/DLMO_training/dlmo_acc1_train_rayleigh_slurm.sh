@@ -38,7 +38,7 @@ echo
 # Get start of job information
 START_TIME=`date +%s`
 host_node=$SLURMD_NODENAME
-PY_FILE=/projects01/didsr-aiml/zitong.yu/DLMO_demo/DLMO_training/dlmo_train_hvd.py
+PY_FILE=dlmo_train_hvd.py
 
 time horovodrun -np 4 -H localhost:4 python ${PY_FILE} --task rayleigh \
 --acceleration 1 \

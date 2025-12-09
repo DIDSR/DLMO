@@ -40,14 +40,14 @@ START_TIME=`date +%s`
 #IO_VARIABLE
 
 host_node=$SLURMD_NODENAME
-OUTPUT_FLD="/scratch/zitong.yu/mri_ddpm/test_out_100k/${host_node}"
-PY_FILE=/projects01/didsr-aiml/prabhat.kc/code/mri_ddpm/HCP_diffusion_codes/scripts/image_sample_newdataset2_centercrop.py
-MODEL_PATH=/projects01/didsr-aiml/prabhat.kc/code/mri_ddpm/HCP_diffusion_codes/trained_models/ema_0.9999_1100000.pt
+OUTPUT_FLD="./test_out_100k/"
+PY_FILE=./script/image_sample_newdataset2_centercrop.py
+MODEL_PATH=./trained_DDPM_model/ema_0.9999_1100000.pt
 
 #CMD_ARGUMENTS
 MODEL_FLAGS="--image_size 384 --attention_resolutions 32,16,8 --num_channels 128 --num_head_channels 64 --num_res_blocks 2 --resblock_updown True --use_scale_shift_norm True --learn_sigma True"
 DIFFUSION_FLAGS="--diffusion_steps 1000 --noise_schedule cosine "
-sample_FLAGS="--save_dir ${OUTPUT_FLD}/HCP_brain_384x384_cropped_260x311_step1100k_ema_samples_jid_${SLURM_JOB_ID}/ --num_samples 10000 --batch_size 8"
+sample_FLAGS="--save_dir ${OUTPUT_FLD}/HCP_brain_384x384_cropped_260x311_step1100k_ema_samples/ --num_samples 10000 --batch_size 8"
 
 
 time python ${PY_FILE} --model_path ${MODEL_PATH} $MODEL_FLAGS $DIFFUSION_FLAGS $sample_FLAGS

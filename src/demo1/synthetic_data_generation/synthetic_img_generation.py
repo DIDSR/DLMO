@@ -41,8 +41,8 @@ num_gen_img = int(sys.argv[2])
 
 is_png = int(sys.argv[3])
 
-DDPM_obj_path = "/projects01/didsr-aiml/zitong.yu/DLMO_demo/synthetic_data_generation/examples/DDPM_obj/"
-mr_acq_path = "/projects01/didsr-aiml/zitong.yu/DLMO_demo/"
+DDPM_obj_path = "./examples/DDPM_obj/"
+mr_acq_path = "../../"
 
 dim1, dim2 = 260, 311
 n_std = 15
@@ -58,7 +58,7 @@ if cmpr_dtype == 'float16':
 else:
     torch_dtype = torch.float32
 
-output_path = "/projects01/didsr-aiml/zitong.yu/DLMO_demo/synthetic_data_generation/examples/img_w_signal/"
+output_path = "./examples/img_w_signal/"
 if not os.path.isdir(output_path): os.makedirs(output_path, exist_ok=True)
 
 # ------------------------------ Signals info -------------------------------------------------#

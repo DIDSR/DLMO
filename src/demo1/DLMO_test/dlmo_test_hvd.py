@@ -1,5 +1,5 @@
 # Estimate the probability of doublet signal using a trained deep learning-based model observer.
-# It supports tasks related to Rayleigh distribution, and can handle both regular and CNN-denoised images.
+# It supports Rayleigh discrimination tasks, and can handle both regular and CNN-denoised images.
 #
 # The script uses Horovod for distributed training and PyTorch for the neural network implementation.
 #

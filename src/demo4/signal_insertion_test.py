@@ -1,6 +1,6 @@
 # Doulet and Singlet Signals Insersion Script
 #
-# This script inserts doulet and singlet signals into DDPM (Denoising Diffusion Probabilistic Models) generated objects
+# This script inserts doulet and singlet signals into DDPM (Denoising Diffusion Probabilistic Models) generated objects.
 # It saves the objects with signals in HDF5 format.
 #
 # Command-line Options:

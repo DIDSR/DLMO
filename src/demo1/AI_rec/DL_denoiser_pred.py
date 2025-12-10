@@ -12,7 +12,7 @@
 #     --pretrained-model-checkpoint-format: Format of the checkpoint file. Default is 'checkpoint-{epoch}.pth.tar'.
 #     --pretrained-model-epoch: Epoch number of the pre-trained model to use. Default is 150.
 #
-# Note: Ensure that the specified paths, model names, and other parameters match your setup and available resources.
+# Note: Ensure that the specified paths, model names, and other parameters match your setup and available data.
 #
 # To use, source the following environment.
 # source /home/prabhat.kc/anaconda3/base_env.sh

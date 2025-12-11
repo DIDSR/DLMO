@@ -14,11 +14,11 @@ $ conda activate dlmo
 ## Usage
 The example codes below show how to run the DLMO framework. To run the code, please accordingly change input paths and relevant parameters for your application.
 
-* **A simple example of the DLMO framework**
+* [**A simple example of the DLMO framework**](https://github.com/DIDSR/DLMO/tree/main/src/demo1)
 
   This example includes four parts: 1) Synthetic data generation, 2) AI reconstruction, 3) DLMO training, and 4) DLMO testing. Please follow the order to run this example.
 
-  1. *Synthetic data generation*
+  1. [*Synthetic data generation*](https://github.com/DIDSR/DLMO/tree/main/src/demo1/synthetic_data_generation)
 
 This script performs forward projection and reconstruction of DDPM (Denoising Diffusion Probabilistic Models) generated objects using RSOS (Root Sum of Squares) method to create a few examples of accelerated MR images. It saves the reconstructions in HDF5 format as well as png format.
 
@@ -45,7 +45,7 @@ Example of the outputs:
 ![Fully-sampled MR images with a doulet signal reconstructed using rSOS](src/demo1/synthetic_data_generation/examples/img_w_signal/fully_sampled_doublet_rsos_0.png "Fully-sampled MR images with a doulet signal reconstructed using rSOS")
 ![Accelerated MR images with a doulet signal reconstructed using rSOS](src/demo1/synthetic_data_generation/examples/img_w_signal/accelerated_sample_doublet_rsos_0.png "Accelerated MR images with a doulet signal reconstructed using rSOS")
 
-  2. *AI reconstruction*
+  2. [*AI reconstruction*](https://github.com/DIDSR/DLMO/tree/main/src/demo1/AI_rec)
 
 Demo scripts for AI-based reconstruction methods. A U-Net example is included. The test data and its predictions are large files so does not provided here. To obtain those, please generate them using scripts in synthetic_data_generation folder.
 
@@ -72,7 +72,7 @@ Arguments:
 --pretrained-model-epoch: Epoch number of the pre-trained model to use. Default is 150.
 ```
 
-  3. *DLMO training*
+  3. [*DLMO training*](https://github.com/DIDSR/DLMO/tree/main/src/demo1/DLMO_training)
 
 Train the deep learning-based model observer. It supports distributed training using Horovod and handles various configurations through command-line arguments.
 
@@ -142,7 +142,7 @@ python dlmo_train_hvd.py --task rayleigh \
 --log-file-format log.hdf5
 ```
 
-  4. *DLMO testing*
+  4. [*DLMO testing*](https://github.com/DIDSR/DLMO/tree/main/src/demo1/DLMO_test)
 
 This example estimates the probability of doublet signal using a trained deep learning-based model observer. It supports the Rayleigh discrimination tasks, and can handle both regular and CNN-denoised images. The script uses Horovod for distributed training and PyTorch for the neural network implementation.
 
@@ -192,7 +192,7 @@ TRAINED_MODEL_PATH=./trained_model/mri_cnn_io_acc_${ACC}_hvd/hvd_cpts/
 # Transfer-learned models
 EPOCH=50
 
-# Based model
+# Base model
 #EPOCH=170
 
 python dlmo_test_hvd.py --task rayleigh \
@@ -205,7 +205,7 @@ python dlmo_test_hvd.py --task rayleigh \
 --pretrained-model-epoch $EPOCH
 ```
 
-* **Object generation using DDPM**
+* [**Object generation using DDPM**](https://github.com/DIDSR/DLMO/tree/main/src/demo2)
 
   This example generates a large batch of image samples from a model and save them as a large numpy array. This can be used to produce samples for FID evaluation.
 
@@ -227,7 +227,7 @@ python dlmo_test_hvd.py --task rayleigh \
 
   Output files are in `${OUTPUT_FLD}` folder as `.npz` files.
 
-* **MR acquisition and reconstruction**
+* [**MR acquisition and reconstruction**](https://github.com/DIDSR/DLMO/tree/main/src/demo3)
 
   This example shows forward projection and reconstruction of DDPM generated objects using the rSOS method to create test dataset. It saves the reconstructions in HDF5 format.
 
@@ -250,7 +250,7 @@ python rsos_ddpm_test.py [acceleration factor]
 python rsos_ddpm_test.py 4
 ```
 
-* **Syntheric defect insertion**
+* [**Syntheric defect insertion**](https://github.com/DIDSR/DLMO/tree/main/src/demo4)
 
   This script inserts doulet and singlet signals into DDPM generated objects. It saves the objects with signals in HDF5 format.
 
@@ -273,21 +273,21 @@ Examples:
 python signal_insertion_test.py 4
 ```
 
-* **Statistical anslysis**
+* [**Statistical anslysis**](https://github.com/DIDSR/DLMO/tree/main/src/demo5)
 
 Statistical analysis includes two example scripts: 1) sample size determination via a power analysis and 2) statistical analysis for a pivotal study. Pre-installation of the iMRMC application is **NOT** recommended for the use of these scripts.
 
-1. *Sample size determination*
+1. [*Sample size determination*](https://github.com/DIDSR/DLMO/tree/main/src/demo5/power_analysis)
 
    This script conducts a power analysis for sample size determination in our paper. To run the script, simply execute `power_analysis_BDG.R`. To use your own pilot data, please replace `pliot_data.csv` with your data, following the same format in `pliot_data.csv`, and update proportion correct by DLMO and its variance in the `power_analysis_BDG.R`.
 
-2. *Pivotal study*
+2. [*Pivotal study*](https://github.com/DIDSR/DLMO/tree/main/src/demo5/pivotal_study)
 
     This script conducts a similarity test to investigate whether DLMO performs similarly to human readers within a pre-defined margin of 0.1 proportion correct. To run the script, simply execute `similarity_test.R`. To use it for your own project, please update `DLMO reading results` section in `similarity_test.R`, and provide reading scores in the `reading_scores` folder following the same format.
 
 
 ## License and Copyright
-DLMO is distributed under the MIT license. See [LICENSE](https://github.com/DIDSR/DLMO/blob/ec93f4b73e1caa5a21d89b0a41cd0a8681197999/LICENSE) for more information.
+DLMO is distributed under the MIT license. See [LICENSE](https://github.com/DIDSR/DLMO/tree/main/LICENSE) for more information.
 
 ## Citation
 

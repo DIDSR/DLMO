@@ -41,17 +41,12 @@ for (L in 5:8) {
   data_ho$ImageID <- data_ho$ImageID + 40 * (L - 5)
   data <- rbind(data, data_ho)
 
-  #csv_fname_ho <-
-  #  paste("./reading_scores/", rec_method, "/R4_acc", acc, "_L", L, ".csv", sep = "")
-  #data_ho <- read.csv(csv_fname_ho,  header = TRUE)
-  #data_ho$ImageID <- data_ho$ImageID + 40 * (L - 5)
-  #data <- rbind(data, data_ho)
+  csv_fname_ho <-
+    paste("./reading_scores/", rec_method, "/R4_acc", acc, "_L", L, ".csv", sep = "")
+  data_ho <- read.csv(csv_fname_ho,  header = TRUE)
+  data_ho$ImageID <- data_ho$ImageID + 40 * (L - 5)
+  data <- rbind(data, data_ho)
 
-  #csv_fname_ho <-
-  #  paste("./reading_scores/", rec_method, "/R5_acc", acc, "_L", L, ".csv", sep = "")
-  #data_ho <- read.csv(csv_fname_ho,  header = TRUE)
-  #data_ho$ImageID <- data_ho$ImageID + 40 * (L - 5)
-  #data <- rbind(data, data_ho)
 }
 
 # -------------------------- DLMO reading results ------------------------------

@@ -12,7 +12,9 @@ $ conda activate dlmo
 ```
 
 ## Usage
-The example codes below demonstrate how to run the DLMO framework. Please refer to the hyperlinks for detailed usage of each demo. Before running the code, update the input paths and adjust the relevant parameters according to your specific application.
+The example codes below demonstrate how to run the DLMO framework. Before running the code, update the input paths and adjust the relevant parameters according to your specific application.
+
+Please refer to the hyperlinks for detailed usage of each demo. 
 
 * [**A simple example of the DLMO framework**](https://github.com/DIDSR/DLMO/tree/main/src/demo1)
 

@@ -26,8 +26,8 @@ echo "NGPUS:"$NGPUS
 
 echo
 echo "==== setup cuda environment"
-source /home/prabhat.kc/anaconda3/base_env.sh
-source /home/prabhat.kc/anaconda3/horovod_sm80_env.sh
+source /anaconda3/base_env.sh
+source /anaconda3/horovod_sm80_env.sh
 echo
 echo "====" `date +%Y%m%d-%H%M%S` "begin GPU sample programs from the CUDA toolkit"
 echo

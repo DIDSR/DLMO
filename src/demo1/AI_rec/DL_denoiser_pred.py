@@ -15,8 +15,8 @@
 # Note: Ensure that the specified paths, model names, and other parameters match your setup and available data.
 #
 # To use, source the following environment.
-# source /home/prabhat.kc/anaconda3/base_env.sh
-# source /home/prabhat.kc/anaconda3/horovod_sm80_env.sh
+# source /anaconda3/base_env.sh
+# source /anaconda3/horovod_sm80_env.sh
 
 import torch
 import numpy as np

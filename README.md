@@ -46,7 +46,7 @@ Please refer to the hyperlinks for detailed usage of each demo.
     This example shows forward projection and reconstruction of DDPM generated objects using the rSOS method to create test dataset. It saves the reconstructions in HDF5 format.
 
 
-* [**Syntheric defect insertion**](https://github.com/DIDSR/DLMO/tree/main/src/demo4)
+* [**Synthetic defect insertion**](https://github.com/DIDSR/DLMO/tree/main/src/demo4)
 
     This script inserts doulet and singlet signals into DDPM generated objects. It saves the objects with signals in HDF5 format.
 

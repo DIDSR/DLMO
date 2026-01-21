@@ -7,6 +7,7 @@
 
 Create a new conda enviroment and install the required packages as follows:
 ```
+$ GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/DIDSR/DLMO.git #to avoid LFS quota issue
 $ conda create --name dlmo --file requirements.txt
 $ conda activate dlmo
 ```

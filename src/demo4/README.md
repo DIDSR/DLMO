@@ -9,16 +9,18 @@ This script performs forward projection and reconstruction of DDPM (Denoising Di
 Command-line Options:
 ```
 Acceleration (int): Acceleration factor for sparse sampling (2, 4, 6, or 8).
+Number of generated images (int): Number of images to generate.
+Is PNG (bool): Whether to save images in PNG format (True) or HDF5 format (False).
 ```
 
 Usage:
 ```
-python synthetic_img_generation.py [acceleration factor]
+python synthetic_img_generation.py [acceleration factor] [num_gen_imgs] [is_png]
 ```
 
 Example of running the script at acceleration factor 2:
 ```
-python synthetic_img_generation.py 2
+python synthetic_img_generation.py 2 10 True
 ```
 
 Note: Ensure that all required data files and directories are properly set up before running the script.
@@ -35,7 +37,7 @@ Demo scripts for AI-based reconstruction methods. A U-Net example is included. T
 
 Usage:
 ```
-python synthetic_img_generation.py [-h] [--task TASK] [--test-path TEST_PATH] [--acceleration ACCELERATION]
+python DL_denoiser_pred.py [-h] [--task TASK] [--test-path TEST_PATH] [--acceleration ACCELERATION]
                                    [--model_name MODEL_NAME] [--num-channels NUM_CHANNELS] [--batch-size BATCH_SIZE]
                                    [--batches-per-allreduce BATCHES_PER_ALLREDUCE] [--fp16-allreduce]
                                    [--pretrained-model-path PRETRAINED_MODEL_PATH]

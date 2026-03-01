@@ -17,40 +17,39 @@ The example codes below demonstrate how to run the DLMO framework. Before runnin
 
 Please refer to the hyperlinks for detailed usage of each demo. 
 
-* [**A simple example of the DLMO framework**](https://github.com/DIDSR/DLMO/tree/main/src/demo1)
-
-    This example includes four parts: 1) Synthetic data generation, 2) AI reconstruction, 3) DLMO training, and 4) DLMO testing. Please follow the order to run this example.
-
-    1. [*Synthetic data generation*](https://github.com/DIDSR/DLMO/tree/main/src/demo1/synthetic_data_generation)
-
-    This script performs forward projection and reconstruction of DDPM (Denoising Diffusion Probabilistic Models) generated objects using RSOS (Root Sum of Squares) method to create a few examples of accelerated MR images. It saves the reconstructions in HDF5 format as well as png format.
-
-    2. [*AI reconstruction*](https://github.com/DIDSR/DLMO/tree/main/src/demo1/AI_rec)
-
-    Demo scripts for AI-based reconstruction methods. A U-Net example is included. The test data and its predictions are large files so does not provided here. To obtain those, please generate them using scripts in synthetic_data_generation folder.
-
-    3. [*DLMO training*](https://github.com/DIDSR/DLMO/tree/main/src/demo1/DLMO_training)
-
-    Train the deep learning-based model observer. It supports distributed training using Horovod and handles various configurations through command-line arguments.
-
-    4. [*DLMO testing*](https://github.com/DIDSR/DLMO/tree/main/src/demo1/DLMO_test)
-
-    This example estimates the probability of doublet signal using a trained deep learning-based model observer. It supports the Rayleigh discrimination tasks, and can handle both regular and CNN-denoised images. The script uses Horovod for distributed training and PyTorch for the neural network implementation.
-
-* [**Object generation using DDPM**](https://github.com/DIDSR/DLMO/tree/main/src/demo2)
+* [**Object generation using DDPM**](https://github.com/DIDSR/DLMO/tree/main/src/demo1)
 
     This example generates a large batch of image samples from a model and save them as a large numpy array. This can be used to produce samples for FID evaluation.
 
 
-* [**MR acquisition and reconstruction**](https://github.com/DIDSR/DLMO/tree/main/src/demo3)
+* [**MR acquisition and reconstruction**](https://github.com/DIDSR/DLMO/tree/main/src/demo2)
 
     This example shows forward projection and reconstruction of DDPM generated objects using the rSOS method to create test dataset. It saves the reconstructions in HDF5 format.
 
 
-* [**Synthetic defect insertion**](https://github.com/DIDSR/DLMO/tree/main/src/demo4)
+* [**Synthetic defect insertion**](https://github.com/DIDSR/DLMO/tree/main/src/demo3)
 
     This script inserts doulet and singlet signals into DDPM generated objects. It saves the objects with signals in HDF5 format.
 
+* [**A simple example of the DLMO framework**](https://github.com/DIDSR/DLMO/tree/main/src/demo4)
+
+    This example includes four parts: 1) Image acquisition and reconstruction, 2) AI reconstruction, 3) DLMO training, and 4) DLMO testing. Please follow the order to run this example.
+
+    1. [*Image acquisition and reconstruction*](https://github.com/DIDSR/DLMO/tree/main/src/demo4/image_acquisition_and_reconstruction)
+
+    This script performs forward projection and reconstruction of DDPM (Denoising Diffusion Probabilistic Models) generated objects using RSOS (Root Sum of Squares) method to create a few examples of accelerated MR images. It saves the reconstructions in HDF5 format as well as png format.
+
+    2. [*AI reconstruction*](https://github.com/DIDSR/DLMO/tree/main/src/demo4/AI_rec)
+
+    Demo scripts for AI-based reconstruction methods. A U-Net example is included. The test data and its predictions are large files so does not provided here. To obtain those, please generate them using scripts in synthetic_data_generation folder.
+
+    3. [*DLMO training*](https://github.com/DIDSR/DLMO/tree/main/src/demo4/DLMO_training)
+
+    Train the deep learning-based model observer. It supports distributed training using Horovod and handles various configurations through command-line arguments.
+
+    4. [*DLMO testing*](https://github.com/DIDSR/DLMO/tree/main/src/demo4/DLMO_test)
+
+    This example estimates the probability of doublet signal using a trained deep learning-based model observer. It supports the Rayleigh discrimination tasks, and can handle both regular and CNN-denoised images. The script uses Horovod for distributed training and PyTorch for the neural network implementation.
 
 * [**Statistical anslysis**](https://github.com/DIDSR/DLMO/tree/main/src/demo5)
 

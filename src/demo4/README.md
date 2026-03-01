@@ -20,7 +20,7 @@ python synthetic_img_generation.py [acceleration factor] [num_gen_imgs] [is_png]
 
 Example of running the script at acceleration factor 2:
 ```
-python synthetic_img_generation.py 2 10 True
+python synthetic_img_generation.py 2 10 1
 ```
 
 Note: Ensure that all required data files and directories are properly set up before running the script.

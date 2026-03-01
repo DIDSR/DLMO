@@ -1,6 +1,6 @@
-# Syntheric defect insertion
+# Synthetic defect insertion
 
-This script inserts doulet and singlet signals into DDPM generated objects. It saves the objects with signals in HDF5 format.
+This script inserts doublet and singlet signals into DDPM generated objects. It saves the objects with signals in HDF5 format.
 
 Command-line Options:
 

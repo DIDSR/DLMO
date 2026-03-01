@@ -25,9 +25,9 @@ Note: Ensure that all required data files and directories are properly set up be
 
 Example of the outputs:
 
-![Object with a doulet signal](image_acquisition_and_reconstruction/examples/img_w_signal/gt_sample_doublet_rsos_0.png "Object with a doulet signal")
-![Fully-sampled MR images with a doulet signal reconstructed using rSOS](image_acquisition_and_reconstruction/examples/img_w_signal/fully_sampled_doublet_rsos_0.png "Fully-sampled MR images with a doulet signal reconstructed using rSOS")
-![Accelerated MR images with a doulet signal reconstructed using rSOS](image_acquisition_and_reconstruction/examples/img_w_signal/accelerated_sample_doublet_rsos_0.png "Accelerated MR images with a doulet signal reconstructed using rSOS")
+![Object with a doublet signal](image_acquisition_and_reconstruction/examples/img_w_signal/gt_sample_doublet_rsos_0.png "Object with a doublet signal")
+![Fully-sampled MR images with a doublet signal reconstructed using rSOS](image_acquisition_and_reconstruction/examples/img_w_signal/fully_sampled_doublet_rsos_0.png "Fully-sampled MR images with a doublet signal reconstructed using rSOS")
+![Accelerated MR images with a doublet signal reconstructed using rSOS](image_acquisition_and_reconstruction/examples/img_w_signal/accelerated_sample_doublet_rsos_0.png "Accelerated MR images with a doublet signal reconstructed using rSOS")
 
 ## [*AI reconstruction*](https://github.com/DIDSR/DLMO/tree/main/src/demo4/AI_rec)
 

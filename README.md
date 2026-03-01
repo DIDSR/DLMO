@@ -29,7 +29,7 @@ Please refer to the hyperlinks for detailed usage of each demo.
 
 * [**Synthetic defect insertion**](https://github.com/DIDSR/DLMO/tree/main/src/demo3)
 
-    This script inserts doulet and singlet signals into DDPM generated objects. It saves the objects with signals in HDF5 format.
+    This script inserts doublet and singlet signals into DDPM generated objects. It saves the objects with signals in HDF5 format.
 
 * [**A simple example of the DLMO framework**](https://github.com/DIDSR/DLMO/tree/main/src/demo4)
 
@@ -51,7 +51,7 @@ Please refer to the hyperlinks for detailed usage of each demo.
 
     This example estimates the probability of doublet signal using a trained deep learning-based model observer. It supports the Rayleigh discrimination tasks, and can handle both regular and CNN-denoised images. The script uses Horovod for distributed training and PyTorch for the neural network implementation.
 
-* [**Statistical anslysis**](https://github.com/DIDSR/DLMO/tree/main/src/demo5)
+* [**Statistical analysis**](https://github.com/DIDSR/DLMO/tree/main/src/demo5)
 
     Statistical analysis includes two example scripts: 1) sample size determination via a power analysis and 2) statistical analysis for a pivotal study. Pre-installation of the iMRMC application is **NOT** recommended for the use of these scripts.
 

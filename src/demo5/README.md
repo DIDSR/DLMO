@@ -1,4 +1,4 @@
-# Statistical anslysis
+# Statistical analysis
 
 Statistical analysis includes two example scripts: 1) sample size determination via a power analysis and 2) statistical analysis for a pivotal study. Pre-installation of the iMRMC application is **NOT** recommended for the use of these scripts.
 

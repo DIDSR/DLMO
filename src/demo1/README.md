@@ -21,4 +21,4 @@ python ./script/image_sample_newdataset2_centercrop.py --model_path ${MODEL_PATH
 Output files are in `${OUTPUT_FLD}` folder as `.npz` files.
 
 An example of the outputs:
-![An example of DDPM generated object](docs/obj_0.png "An example of DDPM generated object")
+![An example of DDPM generated object](../../docs/obj_0.png "An example of DDPM generated object")

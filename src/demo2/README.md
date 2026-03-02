@@ -1,21 +1,28 @@
-# Object generation using DDPM
+# MR acquisition and reconstruction
 
-This example generates a large batch of image samples from a model and save them as a large numpy array. This can be used to produce samples for FID evaluation.
+This example shows forward projection and reconstruction of DDPM generated objects using the rSOS method to create test dataset. It saves the reconstructions in HDF5 format.
+
+Command-line Options:
+
+```
+Acceleration (int): Acceleration factor for sparse sampling (2, 4, 6, or 8).
+```
 
 Usage:
 
 ```
-OUTPUT_FLD="./test_out_100k/"
-PY_FILE=./script/image_sample_newdataset2_centercrop.py
-MODEL_PATH=./trained_DDPM_model/ema_0.9999_1100000.pt
-
-#CMD_ARGUMENTS
-MODEL_FLAGS="--image_size 384 --attention_resolutions 32,16,8 --num_channels 128 --num_head_channels 64 --num_res_blocks 2 --resblock_updown True --use_scale_shift_norm True --learn_sigma True"
-DIFFUSION_FLAGS="--diffusion_steps 1000 --noise_schedule cosine "
-sample_FLAGS="--save_dir ${OUTPUT_FLD}/HCP_brain_384x384_cropped_260x311_step1100k_ema_samples/ --num_samples 10000 --batch_size 8"
-
-python ./script/image_sample_newdataset2_centercrop.py --model_path ${MODEL_PATH} $MODEL_FLAGS $DIFFUSION_FLAGS $sample_FLAGS
-
+python rsos_ddpm_test.py [acceleration factor]
 ```
 
-Output files are in `${OUTPUT_FLD}` folder as `.npz` files.
+Examples:
+	Run with acceleration factor 4:
+
+```
+python rsos_ddpm_test.py 4
+```
+
+Input files are `.npz` files generated in the demo1. The reconstructions are saved in HDF5 format in the `./rsos_rec/` folder. Each HDF5 file contains a dataset named `H_0` which holds the singlet image reconstructions, `H_1` for doublet image reconstructions, and `L_list` for the signal length for each reconstruction.
+
+Examples of the reconstructions are shown below. The left one is for acceleration factor 4, which contains a singlet signal, and the right one is for acceleration factor 8, which contains a doublet signal. The signal length is 3 for both cases. The reconstructions are noisy, and the doublet signal is not visually distinguishable from the singlet signal, which makes it a challenging task.
+![acc4](../../docs/H0_rsos_0.png "Acceleration factor 4")
+![acc8](../../docs/H1_rsos_0.png "Acceleration factor 8")

@@ -4,7 +4,7 @@ Demo scripts for AI-based reconstruction methods. A U-Net example is included. T
 
 Usage:
 ```
-python synthetic_img_generation.py [-h] [--task TASK] [--test-path TEST_PATH] [--acceleration ACCELERATION]
+python DL_denoiser_pred.py [-h] [--task TASK] [--test-path TEST_PATH] [--acceleration ACCELERATION]
                                    [--model_name MODEL_NAME] [--num-channels NUM_CHANNELS] [--batch-size BATCH_SIZE]
                                    [--batches-per-allreduce BATCHES_PER_ALLREDUCE] [--fp16-allreduce]
                                    [--pretrained-model-path PRETRAINED_MODEL_PATH]

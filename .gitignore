@@ -162,3 +162,6 @@ cython_debug/
 #.idea/
 
 docs/build/doctrees
+
+# MacOS
+.DS_Store

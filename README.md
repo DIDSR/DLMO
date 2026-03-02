@@ -17,21 +17,21 @@ The example codes below demonstrate how to run the DLMO. Before running the code
 
 Please refer to the hyperlinks for detailed usage of each demo. 
 
-* [**Object generation using DDPM**](https://github.com/DIDSR/DLMO/tree/main/src/demo1)
+1. [**Object generation using DDPM**](https://github.com/DIDSR/DLMO/tree/main/src/demo1)
 
     This example generates a large batch of image samples from a model and save them as a large numpy array. This can be used to produce samples for FID evaluation.
 
 
-* [**MR acquisition and reconstruction**](https://github.com/DIDSR/DLMO/tree/main/src/demo2)
+2. [**MR acquisition and reconstruction**](https://github.com/DIDSR/DLMO/tree/main/src/demo2)
 
     This example shows forward projection and reconstruction of DDPM generated objects using the rSOS method to create test dataset. It saves the reconstructions in HDF5 format.
 
 
-* [**Synthetic defect insertion**](https://github.com/DIDSR/DLMO/tree/main/src/demo3)
+3. [**Synthetic defect insertion**](https://github.com/DIDSR/DLMO/tree/main/src/demo3)
 
     This script inserts doublet and singlet signals into DDPM generated objects. It saves the objects with signals in HDF5 format.
 
-* [**A simple example of the DLMO approach**](https://github.com/DIDSR/DLMO/tree/main/src/demo4)
+4. [**A simple example of the DLMO approach**](https://github.com/DIDSR/DLMO/tree/main/src/demo4)
 
     This example includes four parts: 1) Image acquisition and reconstruction, 2) AI reconstruction, 3) DLMO training, and 4) DLMO testing. Please follow the order to run this example.
 
@@ -51,7 +51,7 @@ Please refer to the hyperlinks for detailed usage of each demo.
 
     This example estimates the probability of doublet signal using a trained deep learning-based model observer. It supports the Rayleigh discrimination tasks, and can handle both regular and CNN-denoised images. The script uses Horovod for distributed training and PyTorch for the neural network implementation.
 
-* [**Statistical analysis**](https://github.com/DIDSR/DLMO/tree/main/src/demo5)
+5. [**Statistical analysis**](https://github.com/DIDSR/DLMO/tree/main/src/demo5)
 
     Statistical analysis includes two example scripts: 1) sample size determination via a power analysis and 2) statistical analysis for a pivotal study. Pre-installation of the iMRMC application is **NOT** recommended for the use of these scripts.
 
@@ -66,7 +66,7 @@ Please refer to the hyperlinks for detailed usage of each demo.
 ## References
 1. "HCP-Young Adult 2025,” https://www.humanconnectome.org/study/hcp-young-adult/document/hcp-young-adult-2025-release, 2025.
 2. K. Li, H. Li, K. J. Myers, and M. A. Anastasio, “Estimating task-based performance bounds for accelerated MRI image reconstruction methods by use of learned-ideal observers,” in Medical Imaging 2025: Image Perception, Observer Performance, and Technology Assessment, vol. 13409. SPIE, 2025, pp. 125–129.
-3. J. Ho, A. Jain, and P. Abbeel, “Denoising diffusion probabilistic models,” Advances in neural information processing systems, vol. 33, pp. 6840–6851, 2020
+3. J. Ho, A. Jain, and P. Abbeel, “Denoising diffusion probabilistic models,” Advances in neural information processing systems, vol. 33, pp. 6840–6851, 2020.
 4. J. I. Tamir, F. Ong, J. Y. Cheng, M. Uecker, and M. Lustig, “Generalized magnetic resonance image reconstruction using the Berkeley advanced reconstruction toolbox,” in ISMRM Workshop on Data Sampling & Image Reconstruction, Sedona, AZ, vol. 7, 2016, p. 8.
 5. FDA/CDRH, “iMRMC: Software for the Statistical Analysis of multi-reader multi-case studies,” RST Catalog, 2022, https://doi.org/10.5281/ZENODO.6628838.
 

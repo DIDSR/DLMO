@@ -1,5 +1,5 @@
 # Evaluating the resolution of AI-based accelerated MR reconstruction using a deep learning-based model observer (DLMO)
-**The DLMO framework** evaluates multi-coil sensitivity encoding parallel MR imaging systems at different acceleration factors on the Rayleigh discrimination task as a surrogate measure of resolution, as detailed in our paper. You can implement the DLMO framework with other vendor-specific image acquisition settings and reconstruction methods to demonstrate their diagnostic efficacy.
+**The DLMO implementation** evaluates multi-coil sensitivity encoding parallel MR imaging systems at different acceleration factors on the Rayleigh discrimination task as a surrogate measure of resolution, as detailed in our paper. You can implement the DLMO approach with other image acquisition settings and reconstruction methods to demonstrate their diagnostic efficacy.
 
 ![Evaluation using the DLMO framework](docs/github_fig1.png "Evaluation using the DLMO framework")
 
@@ -13,7 +13,7 @@ $ conda activate dlmo
 ```
 
 ## Usage
-The example codes below demonstrate how to run the DLMO framework. Before running the code, update the input paths and adjust the relevant parameters according to your specific application.
+The example codes below demonstrate how to run the DLMO. Before running the code, update the input paths and adjust the relevant parameters according to your specific application.
 
 Please refer to the hyperlinks for detailed usage of each demo. 
 
@@ -31,7 +31,7 @@ Please refer to the hyperlinks for detailed usage of each demo.
 
     This script inserts doublet and singlet signals into DDPM generated objects. It saves the objects with signals in HDF5 format.
 
-* [**A simple example of the DLMO framework**](https://github.com/DIDSR/DLMO/tree/main/src/demo4)
+* [**A simple example of the DLMO approach**](https://github.com/DIDSR/DLMO/tree/main/src/demo4)
 
     This example includes four parts: 1) Image acquisition and reconstruction, 2) AI reconstruction, 3) DLMO training, and 4) DLMO testing. Please follow the order to run this example.
 
@@ -64,12 +64,17 @@ Please refer to the hyperlinks for detailed usage of each demo.
     This script conducts a similarity test to investigate whether DLMO performs similarly to human readers within a pre-defined margin of 0.1 proportion correct. To run the script, simply execute `similarity_test.R`. To use it for your own project, please update the `DLMO reading results` section in `similarity_test.R`, and provide reading scores in the `reading_scores` folder following the same format.
 
 ## References
+1. "HCP-Young Adult 2025,” https://www.humanconnectome.org/study/hcp-young-adult/document/hcp-young-adult-2025-release, 2025.
+2. K. Li, H. Li, K. J. Myers, and M. A. Anastasio, “Estimating task-based performance bounds for accelerated MRI image reconstruction methods by use of learned-ideal observers,” in Medical Imaging 2025: Image Perception, Observer Performance, and Technology Assessment, vol. 13409. SPIE, 2025, pp. 125–129.
+3. J. Ho, A. Jain, and P. Abbeel, “Denoising diffusion probabilistic models,” Advances in neural information processing systems, vol. 33, pp. 6840–6851, 2020
+4. J. I. Tamir, F. Ong, J. Y. Cheng, M. Uecker, and M. Lustig, “Generalized magnetic resonance image reconstruction using the Berkeley advanced reconstruction toolbox,” in ISMRM Workshop on Data Sampling & Image Reconstruction, Sedona, AZ, vol. 7, 2016, p. 8.
+5. FDA/CDRH, “iMRMC: Software for the Statistical Analysis of multi-reader multi-case studies,” RST Catalog, 2022, https://doi.org/10.5281/ZENODO.6628838.
 
 ## License and Copyright
 DLMO is distributed under the MIT license. See [LICENSE](https://github.com/DIDSR/DLMO/tree/main/LICENSE) for more information.
 
 ## Citation
-If you use the DLMO data or code in your project, please cite its arXiv paper:
+If you use the DLMO data or code in your project, please cite its [arXiv paper](https://arxiv.org/abs/2602.22535):
 ```
 @article{yu2026evaluating,
     title={Evaluating the resolution of AI-based accelerated MR reconstruction using a deep learning-based model observer},

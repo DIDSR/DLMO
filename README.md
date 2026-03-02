@@ -63,10 +63,20 @@ Please refer to the hyperlinks for detailed usage of each demo.
 
     This script conducts a similarity test to investigate whether DLMO performs similarly to human readers within a pre-defined margin of 0.1 proportion correct. To run the script, simply execute `similarity_test.R`. To use it for your own project, please update the `DLMO reading results` section in `similarity_test.R`, and provide reading scores in the `reading_scores` folder following the same format.
 
+## References
 
 ## License and Copyright
 DLMO is distributed under the MIT license. See [LICENSE](https://github.com/DIDSR/DLMO/tree/main/LICENSE) for more information.
 
 ## Citation
+If you use the DLMO data or code in your project, please cite its arXiv paper:
+```
+@article{yu2026evaluating,
+    title={Evaluating the resolution of AI-based accelerated MR reconstruction using a deep learning-based model observer},
+    author={Yu, Zitong and Zeng, Rongping and Samuelson, Frank and Kc, Prabhat},
+    journal={arXiv preprint arXiv:2602.22535},
+    year={2026}
+}
+```
 
 ## Disclaimer

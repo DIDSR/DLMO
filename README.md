@@ -7,7 +7,12 @@ This **DLMO (Deep Learning Model Observer)** implementation evaluates multi-coil
 
 Create a new conda enviroment and install the required packages as follows:
 ```
-$ GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/DIDSR/DLMO.git #to avoid LFS quota issue
+$ git clone https://github.com/DIDSR/DLMO.git
+```
+The trained models uploaded to this repository total approximately 2.17 GB. In case of bandwidth issues or if you only need to use the code, you can enable GitHub’s smudging option to download the models as pointers instead.
+```
+$ GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/DIDSR/DLMO.git #to avoid LFS quota issue and download this repo without the trained model
+$ github lfs pull #in case you decide to use our trained model 
 $ conda create --name dlmo --file requirements.txt
 $ conda activate dlmo
 ```

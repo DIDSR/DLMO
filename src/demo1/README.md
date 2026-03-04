@@ -1,6 +1,6 @@
 # Object generation using DDPM
 
-The code below inputs a trained DDPM model to generates a large batch of image samples that are saved as a numpy array. 
+The code below inputs a trained Denoising Diffusion Probabilistic Models (**DDPM**) model to generates a large batch of MR image samples that are saved as a numpy array. 
 
 ### Usage:
 
@@ -27,18 +27,24 @@ time python ${PY_FILE} --model_path ${MODEL_PATH} $MODEL_FLAGS ${DIFFUSION_FLAGS
 
 ### Additional Guides:
 
-1. The DDPM was trained by use of the HCP's young adult dataset[^refDDPM] :
+1. The DDPM was trained using the HCP's young adult dataset[^refDDPM] :
 
-	* This dataset consists of 1,113 subjects  scanned on a customized Siemens 3T MRI system.
+	* This dataset consists of 1,113 subjects scanned on a customized Siemens 3T MRI system.
 	* From each patient, 10 axial slices within their Cerebrospinal fluid (CSF) regions were extracted to train the DDPM model. 
 
 2. The no. of diffusion steps is an important parameter when running this ddpm-based MRI data generation code. 
 
-	![MR images for different diffusion steps](../../docs/pics/diffusion_steps.svg)
+	<p align="center">
+	  <img src="../../docs/pics/diffusion_steps.svg"  width="600">
+	  <br> MR images for different diffusion steps
+	</p>
 
-3. Appropriately validate the generated data using metrics relevant to your clinical application. Below are the image statistics corresponding to the mean, standard deviation, white matter area–to–intracranial area ratio, and gray matter area–to–intracranial area ratio, computed using 1,000 real and 1,000 DDPM-generated images at each step.
+3. Appropriately validate the generated data using metrics relevant to your clinical application. Below are the image statistics corresponding to the mean, standard deviation, white matter area–to–intracranial area ratio, and gray matter area–to–intracranial area ratio, computed using 1,000 real and 1,000 DDPM-generated MR images at each step.
 
-	![Image statistcs for different diffusion steps](../../docs/pics/image_stats.svg)
+	<p align="center">
+	  <img src="../../docs/pics/image_stats.svg" width="600">
+	  <br> Image statistcs for different diffusion steps
+	</p>
 
 4. Approximately 217,000 images were generated, including 168,000 for DLMO training, 40,000 for UNet training, 8,000 for image fidelity and AUC analysis, and 640 × 2 for the 2AFC validation study of the DLMO.
 

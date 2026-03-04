@@ -11,8 +11,8 @@ $ git clone https://github.com/DIDSR/DLMO.git
 ```
 The trained models uploaded to this repository total approximately 2.17 GB. In case of bandwidth issues or if you only need to use the code, you can enable GitHub’s smudging option to download the models as pointers instead.
 ```
-$ GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/DIDSR/DLMO.git #to avoid LFS quota issue and download this repo without the trained model
-$ github lfs pull #in case you decide to use our trained model 
+$ GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/DIDSR/DLMO.git #to avoid LFS quota issue and download this repo without the trained models
+$ github lfs pull #in case you decide that you will fully download all the models in this repo
 $ conda create --name dlmo --file requirements.txt
 $ conda activate dlmo
 ```
@@ -65,7 +65,7 @@ Please refer to the hyperlinks for detailed usage of each demo.
 
 	2. [*Pivotal study*](https://github.com/DIDSR/DLMO/tree/main/src/demo5/pivotal_study)
 
-    This script conducts a similarity test to investigate whether DLMO performs similarly to human readers within a pre-defined margin of 0.1 proportion correct. To run the script, simply execute `similarity_test.R`. To use it for your own project, please update the `DLMO reading results` section in `similarity_test.R`, and provide reading scores in the `reading_scores` folder following the same.
+    This script conducts a similarity test to investigate whether DLMO performs similarly to human readers within a pre-defined margin of 0.1 proportion correct. To run the script, simply execute `similarity_test.R`. To use it for your own project, please update the `DLMO reading results` section in `similarity_test.R`, and provide reading scores in the `reading_scores` folder following the same format.
 
 
 ## License and Copyright

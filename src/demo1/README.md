@@ -32,10 +32,15 @@ time python ${PY_FILE} --model_path ${MODEL_PATH} $MODEL_FLAGS ${DIFFUSION_FLAGS
 	* This dataset consists of 1,113 subjects  scanned on a customized Siemens 3T MRI system.
 	* From each patient, 10 axial slices within their Cerebrospinal fluid (CSF) regions were extracted to train the DDPM model. 
 
-2. No. of diffusion steps is an important parameter when running this ddpm MRI data generation code. 
+2. The no. of diffusion steps is an important parameter when running this ddpm-based MRI data generation code. 
 
-	![MR images for different diffusion steps](../../docs/pics/diffusion_steps)
-<!--[An example of DDPM generated object](../../docs/obj_0.png "An example of DDPM generated object") -->
+	![MR images for different diffusion steps](../../docs/pics/diffusion_steps.svg)
+
+3. Appropriately validate the generated data using metrics relevant to your clinical application. Below are the image statistics corresponding to the mean, standard deviation, white matter area–to–intracranial area ratio, and gray matter area–to–intracranial area ratio, computed using 1,000 real and 1,000 DDPM-generated images at each step.
+
+	![Image statistcs for different diffusion steps](../../docs/pics/image_stats.svg)
+
+4. Approximately 217,000 images were generated, including 168,000 for DLMO training, 40,000 for UNet training, 8,000 for image fidelity and AUC analysis, and 640 × 2 for the 2AFC validation study of the DLMO.
 
 
 [^refDDPM]: J. Ho, A. Jain, and P. Abbeel, “Denoising diffusion probabilistic models,” Advances in neural information processing systems, vol. 33, pp. 6840–6851, 2020.

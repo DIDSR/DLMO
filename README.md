@@ -13,8 +13,11 @@ The trained models uploaded to this repository total approximately 2.17 GB. In c
 ```
 $ GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/DIDSR/DLMO.git #to avoid LFS quota issue and download this repo without the trained models
 $ github lfs pull #in case you decide that you will fully download all the models in this repo
-$ conda create --name dlmo --file requirements.txt
-$ conda activate dlmo
+```
+Create the required enviroments as appropriate to your need
+```
+$ conda create --name ddpm --file requirements/ddpm.yml #to generate MR images using trained DDPM. DDPM training implemented using https://github.com/openai/improved-diffusion
+$ conda create --name dlmo --file requirements/dlmo.yml #to run the dlmo codes
 ```
 
 ## Usage

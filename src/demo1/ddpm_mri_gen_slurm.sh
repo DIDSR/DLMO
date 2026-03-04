@@ -35,8 +35,7 @@ echo "NGPUS:"$NSLOTS
 # Get start of job information
 START_TIME=`date +%s`
 
-
-#conda activate ddpm
+conda activate ddpm
 #cd src/demo1
 # Python file and its input and outputs -----------------------------------------------------------------------------
 PY_FILE=scripts/image_sample_newdataset2_centercrop.py
@@ -44,9 +43,9 @@ MODEL_PATH=trained_DDPM_model/ema_0.9999_1100000.pt
 OUTPUT_FLD="test_out_200k"
 
 # Important ddpm parameters --------------------------
-dSTEP=100
-nSAMPLES=1
-bSIZE=1
+dSTEP=1000
+nSAMPLES=217000
+bSIZE=8
 
 # CMD_ARGUMENTS aligning with how we trained the DDPM model -----------------------------------------------------------------------------
 MODEL_FLAGS="--image_size 384 --attention_resolutions 32,16,8 --num_channels 128 --num_head_channels 64 --num_res_blocks 2 --resblock_updown True --use_scale_shift_norm True --learn_sigma True"

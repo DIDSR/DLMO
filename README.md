@@ -27,7 +27,7 @@ Please refer to the hyperlinks for detailed usage of each demo.
 
 1. [**Object generation using DDPM**](https://github.com/DIDSR/DLMO/tree/main/src/demo1)
 
-    This demo allows one to generate a large batch of image samples using a trained DDPM[^refDDPM] model that are saved as a numpy array. These sample images are employed as to-be-imaged patient (backgrounds) in this DLMO approach.
+    This demo allows one to generate a large batch of image samples using a trained DDPM[^refDDPM] model that are saved as a numpy array. These sample images are employed as to-be-imaged patient (backgrounds) in this DLMO-based discrimination study.
 
 2. [**Synthetic defect insertion**](https://github.com/DIDSR/DLMO/tree/main/src/demo2)
 

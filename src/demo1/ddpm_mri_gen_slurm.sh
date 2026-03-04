@@ -6,7 +6,7 @@
 		#SBATCH --constraint=gpu_cc_70
 
 # Resources needed for job:
-#SBATCH --account=cdrhid0024		# Project ID
+#SBATCH --account=		# Project ID
 #SBATCH --gres=gpu:1			# number of gpus
 #SBATCH --mem=11G			# memory limit
 #SBATCH --ntasks-per-node=1
@@ -27,8 +27,7 @@ nvidia-smi
 
 echo
 echo "==== setup cuda environment"
-source /anaconda3/base_env.sh
-source /anaconda3/ddpm_env.sh
+#conda activate ddpm
 echo
 echo "====" `date +%Y%m%d-%H%M%S` "begin GPU sample programs from the CUDA toolkit"
 echo "NGPUS:"$NSLOTS
@@ -37,21 +36,24 @@ echo "NGPUS:"$NSLOTS
 START_TIME=`date +%s`
 
 
-#IO_VARIABLE
+#conda activate ddpm
+#cd src/demo1
+# Python file and its input and outputs -----------------------------------------------------------------------------
+PY_FILE=scripts/image_sample_newdataset2_centercrop.py
+MODEL_PATH=trained_DDPM_model/ema_0.9999_1100000.pt
+OUTPUT_FLD="test_out_200k"
 
-host_node=$SLURMD_NODENAME
-OUTPUT_FLD="./test_out_100k/"
-PY_FILE=./script/image_sample_newdataset2_centercrop.py
-MODEL_PATH=./trained_DDPM_model/ema_0.9999_1100000.pt
+# Important ddpm parameters --------------------------
+dSTEP=100
+nSAMPLES=1
+bSIZE=1
 
-#CMD_ARGUMENTS
+# CMD_ARGUMENTS aligning with how we trained the DDPM model -----------------------------------------------------------------------------
 MODEL_FLAGS="--image_size 384 --attention_resolutions 32,16,8 --num_channels 128 --num_head_channels 64 --num_res_blocks 2 --resblock_updown True --use_scale_shift_norm True --learn_sigma True"
-DIFFUSION_FLAGS="--diffusion_steps 1000 --noise_schedule cosine "
-sample_FLAGS="--save_dir ${OUTPUT_FLD}/HCP_brain_384x384_cropped_260x311_step1100k_ema_samples/ --num_samples 10000 --batch_size 8"
+DIFFUSION_FLAGS="--diffusion_steps ${dSTEP} --noise_schedule cosine "
+sample_FLAGS="--save_dir ${OUTPUT_FLD}/HCP_brain_384x384_cropped_260x311_step1100k_ema_samples/ --num_samples ${nSAMPLES} --batch_size ${bSIZE}"
 
-
-time python ${PY_FILE} --model_path ${MODEL_PATH} $MODEL_FLAGS $DIFFUSION_FLAGS $sample_FLAGS
-
+python ${PY_FILE} --model_path ${MODEL_PATH} $MODEL_FLAGS ${DIFFUSION_FLAGS} ${sample_FLAGS} 
 
 # Get end of job information
 END_TIME=`date +%s`

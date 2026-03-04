@@ -21,15 +21,14 @@ Please refer to the hyperlinks for detailed usage of each demo.
 
     This demo allows one to generate a large batch of image samples using a trained DDPM[^refDDPM] model that are saved as a numpy array. These sample images are employed as to-be-imaged patient (backgrounds) in this DLMO approach.
 
+2. [**Synthetic defect insertion**](https://github.com/DIDSR/DLMO/tree/main/src/demo2)
 
-2. [**MR acquisition and reconstruction**](https://github.com/DIDSR/DLMO/tree/main/src/demo2)
+    This script inserts doublet and singlet signals into DDPM generated objects. It saves the objects with signals in HDF5 format.
+
+3. [**MR acquisition and reconstruction**](https://github.com/DIDSR/DLMO/tree/main/src/demo3)
 
     This example shows forward projection and reconstruction of DDPM generated objects using the rSOS method to create test dataset. It saves the reconstructions in HDF5 format.
 
-
-3. [**Synthetic defect insertion**](https://github.com/DIDSR/DLMO/tree/main/src/demo3)
-
-    This script inserts doublet and singlet signals into DDPM generated objects. It saves the objects with signals in HDF5 format.
 
 4. [**A simple example of the DLMO approach**](https://github.com/DIDSR/DLMO/tree/main/src/demo4)
 

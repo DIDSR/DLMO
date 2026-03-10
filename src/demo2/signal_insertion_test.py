@@ -46,7 +46,7 @@ n_coil = 8
 cmpr_dtype = 'float32'
 batch_size = 320
 
-te_half_size = 4000
+te_half_size = 4#4000
 te_tot_size = 2 * te_half_size
 
 if cmpr_dtype == 'float16':
@@ -72,13 +72,16 @@ wid = 1.75
 doublet_L = [4, 5, 6, 7, 8, 9]
 
 # ----------------------------Load sensitivity map-------------------------------------------------#
+'''
+# Loading MR sensitivity coils and applying it during the forward modeling is not need for this 
+# signal insertion demo. Hence commenting. 
 map_dir = "sensitivity_8coils.npy"
 sensi_map = np.load(mr_acq_path + map_dir)  # shaped (8, 260, 311)
 sensi_map = np.reshape(sensi_map, (1, -1, dim1, dim2))  # shaped (1, 8, 260, 311)
 sensi_map = torch.tensor(sensi_map, dtype=torch_dtype)
 sensi_map = sensi_map.to(device)
 print('shape of the loaded sensitivity map: ', sensi_map.shape, 'and its dtype is', sensi_map.dtype, flush=True)
-
+'''
 # ----------------------------------------------Loading the testing data--------------------------#
 print("\nReading the test dataset ...", flush=True)
 

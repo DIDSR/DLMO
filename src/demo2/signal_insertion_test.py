@@ -15,8 +15,7 @@
 #
 # Note: Ensure that all required data files and directories are properly set up before running the script.
 # To run, source the following environment
-# source /anaconda3/base_env.sh
-# source /anaconda3/horovod_sm80_env.sh
+# conda activate dlmo
 
 
 import torch
@@ -31,23 +30,21 @@ import h5py
 
 # ------------------------------------- CUDA for PyTorch ------------------------------------------#
 use_cuda = torch.cuda.is_available()
-device = torch.device("cuda" if use_cuda else "cpu")
+device   = torch.device("cuda" if use_cuda else "cpu")
 torch.backends.cudnn.benchmark = True
 
 # ------------------------------ Some basic settings ----------------------------------------------#
-acceleration = int(sys.argv[1])
-
 test_data_path = "../demo1/synthetic_data_generation/examples/DDPM_obj/"
-mr_acq_path = "../"
+mr_acq_path    = "../"
 
-dim1, dim2 = 260, 311
-n_std = 15  # # is the always 15 for all acceleration factors ? KL: Yes
-n_coil = 8
-cmpr_dtype = 'float32'
-batch_size = 320
+dim1, dim2     = 260, 311
+n_std          = 15  # # is the always 15 for all acceleration factors ? KL: Yes
+n_coil         = 8
+cmpr_dtype     = 'float32'
+batch_size     = 320
 
-te_half_size = 4#4000
-te_tot_size = 2 * te_half_size
+te_half_size   = 4000
+te_tot_size    = 2 * te_half_size
 
 if cmpr_dtype == 'float16':
     torch_dtype = torch.float16
@@ -58,19 +55,25 @@ output_path = "./objects/"
 if not os.path.isdir(output_path): os.makedirs(output_path, exist_ok=True)
 
 # ------------------------------ Signals info -------------------------------------------------#
-loc = np.load(mr_acq_path + "mri_loc.npy")
+acceleration = int(sys.argv[1])
+A            = float(sys.argv[2]) #contrast value/amplitude
+signal_L_str = sys.argv[3] #signal lenghts for signlet or doublet insertion
+signal_L     = list(map(int, signal_L_str.split(",")))#contrast value/amplitude
 
+#print(acceleration, A, signal_L)
+
+loc = np.load(mr_acq_path + "mri_loc.npy")
+wid = 1.75
+'''
+# commenting this part as demo will include acceleration factor and contrast values. 
 A_dict = {'1':0.3, \
           '2':0.3, \
           '4':0.7, \
           '6':1.0, \
           '8':1.3}
 A = A_dict[str(acceleration)]
-
-wid = 1.75
-
 doublet_L = [4, 5, 6, 7, 8, 9]
-
+'''
 # ----------------------------Load sensitivity map-------------------------------------------------#
 '''
 # Loading MR sensitivity coils and applying it during the forward modeling is not need for this 
@@ -87,17 +90,17 @@ print("\nReading the test dataset ...", flush=True)
 
 # testing_data = utils.list_all_npy_files(test_data_path, cmpr_dtype=cmpr_dtype, unity_normalize=True)
 
-testing_data = np.load(test_data_path+'/samples_10000x260x311x1.npz')
+testing_data  = np.load(test_data_path+'/samples_10000x260x311x1.npz')
 testing_data  = testing_data.f.arr_0
 testing_data  = np.squeeze(testing_data)
 
-testing_data = testing_data.astype(cmpr_dtype)
-testing_data = testing_data/255.0
+testing_data  = testing_data.astype(cmpr_dtype)
+testing_data  = testing_data/255.0
 
-testing_data = np.reshape(testing_data, (-1, dim1, dim2))
+testing_data  = np.reshape(testing_data, (-1, dim1, dim2))
 init_test_som = testing_data.shape[0]
 
-testing_data = testing_data[:te_tot_size,:,:]
+testing_data  = testing_data[:te_tot_size,:,:]
 
 print('Shape of the loaded testing data is:', testing_data.shape, 'and its dtype is:', testing_data.dtype, flush=True)
 

@@ -41,7 +41,7 @@ Example:
 ```
 ACC=4
 
-TEST_PATH=../synthetic_data_generation/examples/img_w_signal/
+TEST_PATH=../image_acquisition_and_reconstruction/examples/img_w_signal/
 TRAINED_MODEL_PATH=./trained_model/mri_cnn_io_acc_${ACC}_hvd/hvd_cpts/
 #TRAINED_MODEL_PATH=./trained_model/mri_cnn_io_acc_${ACC}_unet_hvd/hvd_cpts/
 
@@ -60,3 +60,5 @@ python dlmo_test_hvd.py --task rayleigh \
 --pretrained-model-path $TRAINED_MODEL_PATH \
 --pretrained-model-epoch $EPOCH
 ```
+
+For CNN-denoised testing, set `--is-cnn-denoised` and point `--test-path` to `../AI_rec/ai_rec_prediction`.

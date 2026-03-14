@@ -1,6 +1,6 @@
 # AI reconstruction
 
-Demo scripts for AI-based reconstruction methods. A U-Net example is included. The test data and its predictions are large files so does not provided here. To obtain those, please generate them using scripts in synthetic_data_generation folder.
+Demo scripts for AI-based reconstruction methods. A U-Net example is included. The test data and its predictions are large files, so they are not provided here. To obtain those, please generate them using scripts in `../image_acquisition_and_reconstruction`.
 
 Usage:
 ```

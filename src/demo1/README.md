@@ -1,6 +1,6 @@
 # Object generation using DDPM
 
-The code below inputs a trained Denoising Diffusion Probabilistic Models (**DDPM**) model to generates a large batch of MR image samples that are saved as a numpy array. 
+The code below uses a trained Denoising Diffusion Probabilistic Models (**DDPM**) model to generate a large batch of MR image samples that are saved as a numpy array.
 
 ### Usage:
 
@@ -25,6 +25,12 @@ sample_FLAGS="--save_dir ${OUTPUT_FLD}/HCP_brain_384x384_cropped_260x311_step110
 time python ${PY_FILE} --model_path ${MODEL_PATH} $MODEL_FLAGS ${DIFFUSION_FLAGS} ${sample_FLAGS} 
 ```
 
+The generated `.npz` file is the object input for demos 2 and 3. With the default example above, the handoff file is:
+
+```
+test_out_200k/HCP_brain_384x384_cropped_260x311_step1100k_ema_samples/samples_10000x260x311x1.npz
+```
+
 ### Additional Guides:
 
 1. The DDPM was trained using the HCP's young adult dataset[^refDDPM] :
@@ -39,11 +45,11 @@ time python ${PY_FILE} --model_path ${MODEL_PATH} $MODEL_FLAGS ${DIFFUSION_FLAGS
 	  <br> MR images for different diffusion steps
 	</p>
 
-3. Appropriately validate the generated data using metrics relevant to your clinical application. Below are the image statistics corresponding to the mean, standard deviation, white matter area–to–intracranial area ratio, and gray matter area–to–intracranial area ratio, computed using 1,000 real and 1,000 DDPM-generated MR images at each step.
+3. Appropriately validate the generated data using metrics relevant to your clinical application. Below are the image statistics corresponding to the mean, standard deviation, white matter area-to-intracranial area ratio, and gray matter area-to-intracranial area ratio, computed using 1,000 real and 1,000 DDPM-generated MR images at each step.
 
 	<p align="center">
 	  <img src="../../docs/pics/image_stats.svg" width="600">
-	  <br> Image statistcs for different diffusion steps
+	  <br> Image statistics for different diffusion steps
 	</p>
 
 4. Approximately 217,000 images were generated, including 168,000 for DLMO training, 40,000 for UNet training, 8,000 for image fidelity and AUC analysis, and 640 × 2 for the 2AFC validation study of the DLMO.

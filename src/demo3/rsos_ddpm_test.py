@@ -6,9 +6,10 @@
 #
 # Command-line Options:
 #     acceleration (int): Acceleration factor for sparse sampling (2, 4, 6, or 8).
+#     object_npz_path (str, optional): Path to the DDPM-generated objects from demo 1.
 #
 # Usage:
-#     python rsos_ddpm_test.py [acceleration factor]
+#     python rsos_ddpm_test.py [acceleration factor] [object_npz_path]
 #
 # Examples:
 #     Run with acceleration factor 2:
@@ -38,7 +39,8 @@ torch.backends.cudnn.benchmark = True
 # ------------------------------ Some basic settings ----------------------------------------------#
 acceleration = int(sys.argv[1])
 
-test_data_path = "../demo1/synthetic_data_generation/examples/DDPM_obj/"
+default_test_data_file = "../demo1/test_out_200k/HCP_brain_384x384_cropped_260x311_step1100k_ema_samples/samples_10000x260x311x1.npz"
+test_data_file = sys.argv[2] if len(sys.argv) > 2 else default_test_data_file
 mr_acq_path = "../"
 
 dim1, dim2 = 260, 311
@@ -85,7 +87,11 @@ print("\nReading the test dataset ...", flush=True)
 
 # testing_data = utils.list_all_npy_files(test_data_path, cmpr_dtype=cmpr_dtype, unity_normalize=True)
 
-testing_data = np.load(test_data_path+'/samples_10000x260x311x1.npz')
+if not os.path.isfile(test_data_file):
+    print("Input object file not found: " + test_data_file, flush=True)
+    sys.exit(1)
+
+testing_data = np.load(test_data_file)
 testing_data  = testing_data.f.arr_0
 testing_data  = np.squeeze(testing_data)
 

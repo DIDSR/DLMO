@@ -53,7 +53,7 @@ python dlmo_train_hvd.py --task rayleigh \
 To train models with transfer learning at accelerated data:
 
 ```
-PRETRAIN_PATH=../DLMO_test/trained_model/mri_dlmo_acc_1_hvd/hvd_cpts/
+PRETRAIN_PATH=../../demo5/DLMO_test/trained_model/mri_dlmo_acc_1_hvd/hvd_cpts/
 PRETRAIN_EPOCH=170
 ACC=4
 

@@ -5,70 +5,47 @@ This **DLMO (Deep Learning Model Observer)** implementation evaluates multi-coil
 
 ## Requirements
 
-Create a new conda enviroment and install the required packages as follows:
+Create a new conda environment and install the required packages as follows:
 ```
 $ git clone https://github.com/DIDSR/DLMO.git
 ```
 The trained models uploaded to this repository total approximately 2.17 GB. In case of bandwidth issues or if you only need to use the code, you can enable GitHub’s smudging option to download the models as pointers instead.
 ```
 $ GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/DIDSR/DLMO.git #to avoid LFS quota issue and download this repo without the trained models
-$ github lfs pull #in case you decide that you will fully download all the models in this repo
+$ git lfs pull #in case you decide that you will fully download all the models in this repo
 ```
-Create the required enviroments as appropriate to your need
+Create the required environments as appropriate to your need:
 ```
 $ conda create --name ddpm --file requirements/ddpm.yml #to generate MR images using trained DDPM. DDPM training implemented using https://github.com/openai/improved-diffusion
 $ conda create --name dlmo --file requirements/dlmo.yml #to run the dlmo codes
 ```
 
 ## Usage
-The example codes below demonstrate how to run the DLMO. Before running the code, update the input paths and adjust the relevant parameters according to your specific application.
-
-Please refer to the hyperlinks for detailed usage of each demo. 
+The example codes below demonstrate how to run the DLMO. Before running the code, update the input paths and adjust the relevant parameters according to your specific application. A demo-by-demo index is also provided in `src/README.md`.
 
 1. [**Object generation using DDPM**](https://github.com/DIDSR/DLMO/tree/main/src/demo1)
 
-    This demo allows one to generate a large batch of image samples using a trained DDPM[^refDDPM] model that are saved as a numpy array. These sample images are employed as to-be-imaged patient (backgrounds) in this DLMO-based discrimination study.
+    Generate a large batch of MR image samples using a trained DDPM[^refDDPM] model. The generated `.npz` file is the object input for demos 2 and 3.
 
 2. [**Synthetic defect insertion**](https://github.com/DIDSR/DLMO/tree/main/src/demo2)
 
-    This script inserts doublet and singlet signals into DDPM generated objects. It saves the objects with signals in HDF5 format.
+    Insert singlet and doublet signals into DDPM-generated objects and save the resulting objects in HDF5 format.
 
 3. [**MR acquisition and reconstruction**](https://github.com/DIDSR/DLMO/tree/main/src/demo3)
 
-    This example shows forward projection and reconstruction of DDPM generated objects using the rSOS method to create test dataset. It saves the reconstructions in HDF5 format.
+    Perform forward projection and rSOS reconstruction on DDPM-generated objects to create test datasets in HDF5 format.
 
+4. [**DLMO training**](https://github.com/DIDSR/DLMO/tree/main/src/demo4)
 
-4. [**A simple example of the DLMO approach**](https://github.com/DIDSR/DLMO/tree/main/src/demo4)
+    Train the deep learning-based model observer. This training demo is separated from the small end-to-end example and saves models for later testing.
 
-    This example includes four parts: 1) Image acquisition and reconstruction, 2) AI reconstruction, 3) DLMO training, and 4) DLMO testing. Please follow the order to run this example.
+5. [**A simple example of the DLMO framework**](https://github.com/DIDSR/DLMO/tree/main/src/demo5)
 
-    1. [*Image acquisition and reconstruction*](https://github.com/DIDSR/DLMO/tree/main/src/demo4/image_acquisition_and_reconstruction)
+    Run a compact workflow with bundled example objects: 1) image acquisition and reconstruction, 2) AI reconstruction, and 3) DLMO testing.
 
-    This script performs forward projection and reconstruction of DDPM (Denoising Diffusion Probabilistic Models) generated objects using RSOS (Root Sum of Squares) method to create a few examples of accelerated MR images. It saves the reconstructions in HDF5 format as well as png format.
+6. [**Statistical analysis**](https://github.com/DIDSR/DLMO/tree/main/src/demo6)
 
-    2. [*AI reconstruction*](https://github.com/DIDSR/DLMO/tree/main/src/demo4/AI_rec)
-
-    Demo scripts for AI-based reconstruction methods. A U-Net example is included. The test data and its predictions are large files so does not provided here. To obtain those, please generate them using scripts in synthetic_data_generation folder.
-
-    3. [*DLMO training*](https://github.com/DIDSR/DLMO/tree/main/src/demo4/DLMO_training)
-
-    Train the deep learning-based model observer. It supports distributed training using Horovod and handles various configurations through command-line arguments.
-
-    4. [*DLMO testing*](https://github.com/DIDSR/DLMO/tree/main/src/demo4/DLMO_test)
-
-    This example estimates the probability of doublet signal using a trained deep learning-based model observer. It supports the Rayleigh discrimination tasks, and can handle both regular and CNN-denoised images. The script uses Horovod for distributed training and PyTorch for the neural network implementation.
-
-5. [**Statistical analysis**](https://github.com/DIDSR/DLMO/tree/main/src/demo5)
-
-    Statistical analysis includes two example scripts: 1) sample size determination via a power analysis and 2) statistical analysis for a pivotal study. Pre-installation of the iMRMC application is **NOT** recommended for the use of these scripts.
-
-	1. [*Sample size determination*](https://github.com/DIDSR/DLMO/tree/main/src/demo5/power_analysis)
-
-	This script conducts a power analysis for sample size determination in our paper. To run the script, simply execute `power_analysis_BDG.R`. To use your own pilot data, please replace `pliot_data.csv` with your data following the same format, and update proportion correct by DLMO and its variance in the `power_analysis_BDG.R`.
-
-	2. [*Pivotal study*](https://github.com/DIDSR/DLMO/tree/main/src/demo5/pivotal_study)
-
-    This script conducts a similarity test to investigate whether DLMO performs similarly to human readers within a pre-defined margin of 0.1 proportion correct. To run the script, simply execute `similarity_test.R`. To use it for your own project, please update the `DLMO reading results` section in `similarity_test.R`, and provide reading scores in the `reading_scores` folder following the same format.
+    Run the statistical analysis examples, including sample size determination via power analysis and pivotal-study similarity testing. Pre-installation of the iMRMC application is **NOT** recommended for the use of these scripts.
 
 
 ## License and Copyright

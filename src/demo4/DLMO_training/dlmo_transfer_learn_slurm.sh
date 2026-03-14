@@ -39,7 +39,7 @@ echo
 START_TIME=`date +%s`
 host_node=$SLURMD_NODENAME
 PY_FILE=dlmo_train_hvd.py
-PRETRAIN_PATH=../DLMO_test/trained_model/mri_dlmo_acc_1_hvd/hvd_cpts/
+PRETRAIN_PATH=../../demo5/DLMO_test/trained_model/mri_dlmo_acc_1_hvd/hvd_cpts/
 PRETRAIN_EPOCH=170
 ACC=$SLURM_ARRAY_TASK_ID
 

@@ -39,7 +39,7 @@ host_node=$SLURMD_NODENAME
 ACC=$SLURM_ARRAY_TASK_ID
 
 
-TEST_PATH=../synthetic_data_generation/examples/img_w_signal/
+TEST_PATH=../image_acquisition_and_reconstruction/examples/img_w_signal/
 TRAINED_MODEL_PATH=./trained_model/mri_cnn_io_acc_${ACC}_hvd/hvd_cpts/
 #TRAINED_MODEL_PATH=./trained_model/mri_cnn_io_acc_${ACC}_unet_hvd/hvd_cpts/
 

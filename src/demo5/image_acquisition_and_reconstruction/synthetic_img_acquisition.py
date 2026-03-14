@@ -6,13 +6,15 @@
 #
 # Command-line Options:
 #     acceleration (int): Acceleration factor for sparse sampling (2, 4, 6, or 8).
+#     num_gen_img (int): Number of images to generate.
+#     is_png (int): Save PNG examples when set to 1.
 #
 # Usage:
-#     python synthetic_img_generation.py [acceleration factor]
+#     python synthetic_img_acquisition.py [acceleration factor] [num_gen_img] [is_png]
 #
 # Examples:
 #     Run with acceleration factor 2:
-#       python synthetic_img_generation.py 2
+#       python synthetic_img_acquisition.py 2 10 1
 #
 # Note: Ensure that all required data files and directories are properly set up before running the script.
 # To run, source the following environment
@@ -35,6 +37,10 @@ device = torch.device("cuda" if use_cuda else "cpu")
 torch.backends.cudnn.benchmark = True
 
 # ------------------------------ Some basic settings ----------------------------------------------#
+if len(sys.argv) != 4:
+    print("Usage: python synthetic_img_acquisition.py [acceleration factor] [num_gen_img] [is_png]", flush=True)
+    sys.exit(1)
+
 acceleration = int(sys.argv[1])
 
 num_gen_img = int(sys.argv[2])

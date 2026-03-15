@@ -39,7 +39,7 @@ torch.backends.cudnn.benchmark = True
 # ------------------------------ Some basic settings ----------------------------------------------#
 acceleration = int(sys.argv[1])
 
-default_test_data_file = "../demo1/test_out_200k/HCP_brain_384x384_cropped_260x311_step1100k_ema_samples/samples_10000x260x311x1.npz"
+default_test_data_file = "../demo5/image_acquisition_and_reconstruction/examples/DDPM_obj/samples_10000x260x311x1.npz"
 test_data_file = sys.argv[2] if len(sys.argv) > 2 else default_test_data_file
 mr_acq_path = "../"
 

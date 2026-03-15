@@ -27,7 +27,7 @@ Input files are `.npz` files generated in the demo1. The reconstructions are sav
 If you omit the optional object path, the script expects the default demo 1 output:
 
 ```
-../demo1/test_out_200k/HCP_brain_384x384_cropped_260x311_step1100k_ema_samples/samples_10000x260x311x1.npz
+../demo5/image_acquisition_and_reconstruction/examples/DDPM_obj/samples_10000x260x311x1.npz
 ```
 
 Examples of the reconstructions are shown below. The left one is for acceleration factor 4, which contains a singlet signal, and the right one is for acceleration factor 8, which contains a doublet signal. The signal length is 3 for both cases. The reconstructions are noisy, and the doublet signal is not visually distinguishable from the singlet signal, which makes it a challenging task.

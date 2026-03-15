@@ -1,17 +1,20 @@
-# Doublet and Singlet Signals Insersion Script
+# Doublet and Singlet Signals Insertion Script
 #
 # This script inserts doublet and singlet signals into DDPM (Denoising Diffusion Probabilistic Models) generated objects.
 # It saves the objects with signals in HDF5 format.
 #
 # Command-line Options:
-#     acceleration (int): Acceleration factor for sparse sampling (2, 4, 6, or 8).
+#     acceleration (int):      Acceleration factor for sparse sampling (2, 4, 6, or 8).
+#     contrast (float):        Signal amplitude/contrast value.
+#     signal_lengths (str):    Comma-separated signal separation lengths, e.g. "4,5,6,7,8".
+#     object_npz_path (str, optional): Path to the DDPM-generated objects from demo 1.
 #
 # Usage:
-#     python signal_insertion_test.py [acceleration factor]
+#     python signal_insertion_test.py [acceleration factor] [contrast] [signal_lengths] [object_npz_path]
 #
 # Examples:
 #     Run with acceleration factor 2:
-#       python signal_insertion_test.py 2
+#       python signal_insertion_test.py 2 0.3 4,5,6,7,8
 #
 # Note: Ensure that all required data files and directories are properly set up before running the script.
 # To run, source the following environment
@@ -34,7 +37,11 @@ device   = torch.device("cuda" if use_cuda else "cpu")
 torch.backends.cudnn.benchmark = True
 
 # ------------------------------ Some basic settings ----------------------------------------------#
-test_data_path = "../demo1/synthetic_data_generation/examples/DDPM_obj/"
+if len(sys.argv) < 4:
+    print("Usage: python signal_insertion_test.py [acceleration] [contrast] [signal_lengths] [object_npz_path]")
+    sys.exit(1)
+
+default_test_data_file = "../demo5/image_acquisition_and_reconstruction/examples/DDPM_obj/samples_10000x260x311x1.npz"
 mr_acq_path    = "../"
 
 dim1, dim2     = 260, 311
@@ -57,8 +64,9 @@ if not os.path.isdir(output_path): os.makedirs(output_path, exist_ok=True)
 # ------------------------------ Signals info -------------------------------------------------#
 acceleration = int(sys.argv[1])
 A            = float(sys.argv[2]) #contrast value/amplitude
-signal_L_str = sys.argv[3] #signal lenghts for signlet or doublet insertion
-signal_L     = list(map(int, signal_L_str.split(",")))#contrast value/amplitude
+signal_L_str = sys.argv[3] #signal lengths for singlet or doublet insertion
+signal_L     = list(map(int, signal_L_str.split(","))) #comma-separated signal lengths
+test_data_file = sys.argv[4] if len(sys.argv) > 4 else default_test_data_file
 
 #print(acceleration, A, signal_L)
 
@@ -90,7 +98,7 @@ print("\nReading the test dataset ...", flush=True)
 
 # testing_data = utils.list_all_npy_files(test_data_path, cmpr_dtype=cmpr_dtype, unity_normalize=True)
 
-testing_data  = np.load(test_data_path+'/samples_10000x260x311x1.npz')
+testing_data  = np.load(test_data_file)
 testing_data  = testing_data.f.arr_0
 testing_data  = np.squeeze(testing_data)
 
@@ -112,7 +120,7 @@ print('min and max in testing data: [%.4f, %.4f]' % (np.min(testing_data), np.ma
 # testing data
 print("\nAdding signal to testing objects ... ", flush=True)
 
-loc_list, L_list, testing_data = add_signals.AddSignalRayleigh(testing_data, A, wid, doublet_L, loc, te_half_size, te_tot_size, dim1, dim2)
+loc_list, L_list, testing_data = add_signals.AddSignalRayleigh(testing_data, A, wid, signal_L, loc, te_half_size, te_tot_size, dim1, dim2)
 
 testing_data = np.reshape(testing_data, (te_tot_size, 1, dim1, dim2))  # second index stores info on coil
 

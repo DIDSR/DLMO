@@ -5,20 +5,29 @@ This script inserts doublet and singlet signals into DDPM generated MR images fr
 Command-line Options:
 
 ```
-Acceleration (int): Acceleration factor for sparse sampling (2, 4, 6, or 8).
-Amplitude (float): Contrast value relavent to the acceleration factor. 
-signal lengths (list): Signal separation lengths as an array. 
+Acceleration (int):           Acceleration factor for sparse sampling (2, 4, 6, or 8).
+Amplitude (float):            Contrast value relevant to the acceleration factor.
+Signal lengths (str):         Comma-separated signal separation lengths, e.g. "4,5,6,7,8".
+Object NPZ path (optional):   Path to the DDPM-generated `.npz` file from demo 1.
 ```
 
 Usage:
 
 ```
-python signal_insertion_test.py [acceleration factor] [contrast] [signal_lengths_as_an_array]
+python signal_insertion_test.py [acceleration factor] [contrast] [signal_lengths] [object_npz_path]
 ```
 
 Examples:
     Run with acceleration factor 1 corresponding to the 3rd row in the 2-AFC table below:
 
 ```
-python signal_insertion_test.py 1 0.3 4:8
+python signal_insertion_test.py 1 0.3 4,5,6,7,8
 ```
+
+If you omit the optional object path, the script expects the default demo 1 output:
+
+```
+../demo5/image_acquisition_and_reconstruction/examples/DDPM_obj/samples_10000x260x311x1.npz
+```
+
+The output HDF5 files are saved to `./objects/`. Each file contains datasets `H_0` (singlet reconstructions), `H_1` (doublet reconstructions), and `L_list` (signal lengths).

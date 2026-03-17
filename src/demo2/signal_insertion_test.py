@@ -13,8 +13,8 @@
 #     python signal_insertion_test.py [acceleration factor] [contrast] [signal_lengths] [object_npz_path]
 #
 # Examples:
-#     Run with acceleration factor 2:
-#       python signal_insertion_test.py 2 0.3 4,5,6,7,8
+#     Run with acceleration factor 4:
+#       python signal_insertion_test.py 4 0.7 '4,5,6,7,8'
 #
 # Note: Ensure that all required data files and directories are properly set up before running the script.
 # To run, source the following environment
@@ -32,10 +32,10 @@ import add_signals
 import h5py
 
 # ------------------------------------- CUDA for PyTorch ------------------------------------------#
-use_cuda = torch.cuda.is_available()
-device   = torch.device("cuda" if use_cuda else "cpu")
+use_cuda                       = torch.cuda.is_available()
+device                         = torch.device("cuda" if use_cuda else "cpu")
 torch.backends.cudnn.benchmark = True
-
+demo                           = True
 # ------------------------------ Some basic settings ----------------------------------------------#
 if len(sys.argv) < 4:
     print("Usage: python signal_insertion_test.py [acceleration] [contrast] [signal_lengths] [object_npz_path]")
@@ -50,7 +50,7 @@ n_coil         = 8
 cmpr_dtype     = 'float32'
 batch_size     = 320
 
-te_half_size   = 4000
+te_half_size   = 40 if demo else 4000
 te_tot_size    = 2 * te_half_size
 
 if cmpr_dtype == 'float16':
@@ -62,18 +62,20 @@ output_path = "./objects/"
 if not os.path.isdir(output_path): os.makedirs(output_path, exist_ok=True)
 
 # ------------------------------ Signals info -------------------------------------------------#
-acceleration = int(sys.argv[1])
-A            = float(sys.argv[2]) #contrast value/amplitude
-signal_L_str = sys.argv[3] #signal lengths for singlet or doublet insertion
-signal_L     = list(map(int, signal_L_str.split(","))) #comma-separated signal lengths
+acceleration = int(sys.argv[1])                         # acceleration factor
+A            = float(sys.argv[2])                       # contrast value/amplitude
+signal_L_str = sys.argv[3]                              # signal lengths for singlet or doublet insertion
+signal_L     = list(map(int, signal_L_str.split(",")))  #  comma-separated signal lengths
 test_data_file = sys.argv[4] if len(sys.argv) > 4 else default_test_data_file
 
-#print(acceleration, A, signal_L)
+# print(acceleration, A, signal_L, test_data_file)
 
 loc = np.load(mr_acq_path + "mri_loc.npy")
 wid = 1.75
+"""
+'''commenting this part as demo cmd input 
+will include acceleration factor, contrast values and signal lengths. 
 '''
-# commenting this part as demo will include acceleration factor and contrast values. 
 A_dict = {'1':0.3, \
           '2':0.3, \
           '4':0.7, \
@@ -81,18 +83,19 @@ A_dict = {'1':0.3, \
           '8':1.3}
 A = A_dict[str(acceleration)]
 doublet_L = [4, 5, 6, 7, 8, 9]
-'''
+
 # ----------------------------Load sensitivity map-------------------------------------------------#
+''' Loading MR sensitivity coils and applying it during the  
+forward modeling is not need for this  signal insertion demo. 
+Hence commenting this part
 '''
-# Loading MR sensitivity coils and applying it during the forward modeling is not need for this 
-# signal insertion demo. Hence commenting. 
 map_dir = "sensitivity_8coils.npy"
 sensi_map = np.load(mr_acq_path + map_dir)  # shaped (8, 260, 311)
 sensi_map = np.reshape(sensi_map, (1, -1, dim1, dim2))  # shaped (1, 8, 260, 311)
 sensi_map = torch.tensor(sensi_map, dtype=torch_dtype)
 sensi_map = sensi_map.to(device)
 print('shape of the loaded sensitivity map: ', sensi_map.shape, 'and its dtype is', sensi_map.dtype, flush=True)
-'''
+"""
 # ----------------------------------------------Loading the testing data--------------------------#
 print("\nReading the test dataset ...", flush=True)
 
@@ -116,28 +119,36 @@ testing_data = testing_data[:te_tot_size,:,:]
 print('Out of %d SOMs, %d of them are used to test DLMO\n' % (init_test_som, testing_data.shape[0]), flush=True)  #
 print('min and max in testing data: [%.4f, %.4f]' % (np.min(testing_data), np.max(testing_data)))
 
+
 # ----------------------------------------------ADD SIGNALS--------------------------#
 # testing data
 print("\nAdding signal to testing objects ... ", flush=True)
 
 loc_list, L_list, testing_data = add_signals.AddSignalRayleigh(testing_data, A, wid, signal_L, loc, te_half_size, te_tot_size, dim1, dim2)
 
-testing_data = np.reshape(testing_data, (te_tot_size, 1, dim1, dim2))  # second index stores info on coil
+if demo:
+	num_L_list = [int(x[0]) for x in L_list]
+	L_str_list = [str(x) for x in num_L_list]
+	print('signal seperation length list:', L_str_list)
+	utils.multi2dplots(1, 3, testing_data[0:3], axis=0, passed_fig_att={'colorbar': False, 'suptitle':'L_list', 'split_title': L_str_list[0:3]})
+	utils. multi2dplots(1, 3, testing_data[te_half_size:(te_half_size+3)], axis=0, passed_fig_att={'colorbar': False, 'suptitle':'L_list', 'split_title': L_str_list[te_half_size+3:(te_half_size+6)]})
 
-print('shape of loaded test data:', testing_data.shape, ', dtype of testing data:', \
+testing_data = np.reshape(testing_data, (te_tot_size, 1, dim1, dim2))  # second index is added to store information on coil sensitivity
+print('shape of saved test data:', testing_data.shape, ', dtype of the saved testing data:', \
 testing_data.dtype, ', no. of doublet SOM in the test set:', te_half_size, flush=True)
 
 print('min and max in testing data with signal: [%.4f, %.4f]' % (np.min(testing_data), np.max(testing_data)))
 
-print("\nSaving hdf5 files to: " + output_path + "test_gt_acc" + str(acceleration) + "_rsos.hdf5")
-f = h5py.File(output_path + "test_gt_acc" + str(acceleration) + "_rsos.hdf5", "w")
-f.create_dataset('H_1', data=testing_data[:te_half_size,:,:,:], dtype=cmpr_dtype)
-f.create_dataset('H_0', data=testing_data[te_half_size:,:,:,:], dtype=cmpr_dtype)
-f.create_dataset('L_list', data=L_list, dtype=cmpr_dtype)
 
-# a few samples
-print("\nSampling some images to: " + output_path + "test_gt_sample0[1]_rsos.npy")
-np.save(output_path + "test_gt_sample1_rsos.npy", testing_data[:10,:,:,:])
-np.save(output_path + "test_gt_sample0_rsos.npy", testing_data[te_half_size:te_half_size + 10,:,:,:])
-np.save(output_path + "test_gt_L_list_0_rsos.npy", L_list[:10])
-np.save(output_path + "test_gt_L_list_1_rsos.npy", L_list[te_half_size:te_half_size + 10])
+if demo: 
+	print("\nSampling some demo images to: " + output_path + "test_gt_sample0[1]_rsos.npy")
+	np.save(output_path + "test_gt_sample1_rsos.npy", testing_data[:te_half_size,:,:,:])
+	np.save(output_path + "test_gt_sample0_rsos.npy", testing_data[te_half_size:,:,:,:])
+	np.save(output_path + "test_gt_L_list_0_rsos.npy", L_list[:te_half_size])
+	np.save(output_path + "test_gt_L_list_1_rsos.npy", L_list[te_half_size: ])
+else: 
+	print("\nSaving hdf5 files to: " + output_path + "test_gt_acc" + str(acceleration) + "_rsos.hdf5")
+	f = h5py.File(output_path + "test_gt_acc" + str(acceleration) + "_rsos.hdf5", "w")
+	f.create_dataset('H_1', data=testing_data[:te_half_size,:,:,:], dtype=cmpr_dtype)
+	f.create_dataset('H_0', data=testing_data[te_half_size:,:,:,:], dtype=cmpr_dtype)
+	f.create_dataset('L_list', data=L_list, dtype=cmpr_dtype)

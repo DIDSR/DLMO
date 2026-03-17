@@ -1,6 +1,6 @@
 # Synthetic defect insertion
 
-This script inserts doublet and singlet signals into DDPM generated MR images from demo 1. The singlet versus doublet signals for different signal lengths are determined using the 2AFC-based detection table provided below. Accordingly, singlet and doublet signals are set based on the acceleration factor, signal contrast, and signal length (in pixels). This code saves the objects with signals in HDF5 format.
+This script inserts doublet and singlet signals into DDPM generated MR images from demo 1. The singlet versus doublet signals for different signal lengths are determined using the 2AFC-based detection table provided below. This, in turn, means that singlet and doublet signals are set based on the acceleration factor, signal contrast, and signal length (in pixels). This code saves the objects with signals in HDF5 format.
 
 Command-line Options:
 
@@ -18,16 +18,11 @@ python signal_insertion_test.py [acceleration factor] [contrast] [signal_lengths
 ```
 
 Examples:
-    Run with acceleration factor 1 corresponding to the 3rd row in the 2-AFC table below:
+    Run with acceleration factor 4 corresponding to the 7th row in the 2-AFC table below (also employed for testing in our DLMO paper):
 
 ```
-python signal_insertion_test.py 1 0.3 4,5,6,7,8
+python signal_insertion_test.py 4 0.7 '4,5,6,7,8'
 ```
 
-If you omit the optional object path, the script expects the default demo 1 output:
-
-```
-../demo5/image_acquisition_and_reconstruction/examples/DDPM_obj/samples_10000x260x311x1.npz
-```
 
 The output HDF5 files are saved to `./objects/`. Each file contains datasets `H_0` (singlet reconstructions), `H_1` (doublet reconstructions), and `L_list` (signal lengths).

@@ -7,17 +7,17 @@ This **DLMO (Deep Learning Model Observer)** implementation evaluates multi-coil
 
 Create a new conda environment and install the required packages as follows:
 ```
-$ git clone https://github.com/DIDSR/DLMO.git
+git clone https://github.com/DIDSR/DLMO.git
 ```
 The trained models uploaded to this repository total approximately 2.17 GB. In case of bandwidth issues or if you only need to use the code, you can enable GitHub’s smudging option to download the models as pointers instead.
 ```
-$ GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/DIDSR/DLMO.git #to avoid LFS quota issue and download this repo without the trained models
-$ git lfs pull #in case you decide that you will fully download all the models in this repo
+GIT_LFS_SKIP_SMUDGE=1 git clone https://github.com/DIDSR/DLMO.git #to avoid LFS quota issue and download this repo without the trained models
+git lfs pull #in case you decide that you will fully download all the models in this repo
 ```
 Create the required environments as appropriate to your need:
 ```
-$ conda create --name ddpm --file requirements/ddpm.yml #to generate MR images using trained DDPM. DDPM training implemented using https://github.com/openai/improved-diffusion
-$ conda create --name dlmo --file requirements/dlmo.yml #to run the dlmo codes
+conda create --name ddpm --file requirements/ddpm.yml #to generate MR images using trained DDPM. DDPM training implemented using https://github.com/openai/improved-diffusion
+conda create --name dlmo --file requirements/dlmo.yml #to run the dlmo codes
 ```
 
 ## Usage

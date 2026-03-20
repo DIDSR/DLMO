@@ -126,13 +126,6 @@ print("\nAdding signal to testing objects ... ", flush=True)
 
 loc_list, L_list, testing_data = add_signals.AddSignalRayleigh(testing_data, A, wid, signal_L, loc, te_half_size, te_tot_size, dim1, dim2)
 
-if demo:
-	num_L_list = [int(x[0]) for x in L_list]
-	L_str_list = [str(x) for x in num_L_list]
-	print('signal seperation length list:', L_str_list)
-	utils.multi2dplots(1, 3, testing_data[0:3], axis=0, passed_fig_att={'colorbar': False, 'suptitle':'L_list', 'split_title': L_str_list[0:3]})
-	utils. multi2dplots(1, 3, testing_data[te_half_size:(te_half_size+3)], axis=0, passed_fig_att={'colorbar': False, 'suptitle':'L_list', 'split_title': L_str_list[te_half_size+3:(te_half_size+6)]})
-
 testing_data = np.reshape(testing_data, (te_tot_size, 1, dim1, dim2))  # second index is added to store information on coil sensitivity
 print('shape of saved test data:', testing_data.shape, ', dtype of the saved testing data:', \
 testing_data.dtype, ', no. of doublet SOM in the test set:', te_half_size, flush=True)
@@ -141,6 +134,16 @@ print('min and max in testing data with signal: [%.4f, %.4f]' % (np.min(testing_
 
 
 if demo: 
+	# display demo plot ----------------------------------------------------------------------------------------------------------------------------
+	num_L_list = [int(x[0]) for x in L_list]
+	L_str_list = [str(x) for x in num_L_list]
+	demo_h1_few = np.transpose(np.squeeze(testing_data[0:3]), axes=(0, 2, 1))
+	demo_h0_few = np.transpose(np.squeeze(testing_data[(te_half_size+3):(te_half_size+6)]), axes=(0, 2, 1))
+	
+	print('signal seperation length list:', L_str_list)
+	utils.multi2dplots(1, 3, demo_h1_few[:, ::-1, :], axis=0, passed_fig_att={'colorbar': False, 'suptitle':'L_list', 'split_title': L_str_list[0:3]})
+	utils. multi2dplots(1, 3, demo_h0_few[:, ::-1, :], axis=0, passed_fig_att={'colorbar': False, 'suptitle':'L_list', 'split_title': L_str_list[te_half_size+3:(te_half_size+6)]})
+	# save demo objects into a .npz file ----------------------------------------------------------------------------------------------------------------------------
 	print("\nSampling some demo images to: " + output_path + "test_gt_sample0[1]_rsos.npy")
 	np.save(output_path + "test_gt_sample1_rsos.npy", testing_data[:te_half_size,:,:,:])
 	np.save(output_path + "test_gt_sample0_rsos.npy", testing_data[te_half_size:,:,:,:])

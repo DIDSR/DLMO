@@ -26,7 +26,7 @@ echo
 echo "==== setup cuda environment"
 source /anaconda3/base_env.sh
 source /anaconda3/ddpm_env.sh
-source /anaconda3/horovod_sm80_env.sh
+# source /anaconda3/horovod_sm80_env.sh
 echo
 echo "====" `date +%Y%m%d-%H%M%S` "begin GPU sample programs from the CUDA toolkit"
 echo
@@ -36,11 +36,11 @@ echo
 # Get start of job information
 START_TIME=`date +%s`
 host_node=$SLURMD_NODENAME
-PY_FILE=signal_insertion_test.py
+PY_FILE=signal_insertion_test.py # ensure that demo option is set as False in this python file
 
-time python ${PY_FILE} 1
-time python ${PY_FILE} 4
-time python ${PY_FILE} 8
+time python ${PY_FILE} 1 0.3 '4,5,6,7,8'
+time python ${PY_FILE} 4 0.7 '4,5,6,7,8'
+time python ${PY_FILE} 8 1.3 '4,5,6,7,8'
 
 
 # Get end of job information

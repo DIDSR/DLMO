@@ -1,7 +1,7 @@
 # Object generation using DDPM
 
-The code below uses a trained Denoising Diffusion Probabilistic Models (**DDPM**) model to generate a large batch of MR image samples that are saved as a numpy array.
-
+The code below uses a trained Denoising Diffusion Probabilistic Models (**DDPM**) model to generate a large batch of 2D MR image samples that are saved as a numpy array.
+These are also referred to as Stochastic Object Models (SOMs) in the rest of the implementation.
 ### Usage:
 
 ```
@@ -22,7 +22,7 @@ MODEL_FLAGS="--image_size 384 --attention_resolutions 32,16,8 --num_channels 128
 DIFFUSION_FLAGS="--diffusion_steps ${dSTEP} --noise_schedule cosine "
 sample_FLAGS="--save_dir ${OUTPUT_FLD}/HCP_brain_384x384_cropped_260x311_step1100k_ema_samples/ --num_samples ${nSAMPLES} --batch_size ${bSIZE}"
 
-time python ${PY_FILE} --model_path ${MODEL_PATH} $MODEL_FLAGS ${DIFFUSION_FLAGS} ${sample_FLAGS} 
+time python ${PY_FILE} --model_path ${MODEL_PATH} $MODEL_FLAGS ${DIFFUSION_FLAGS} ${sample_FLAGS}
 ```
 
 The generated `.npz` file is the object input for demos 2 and 3. With the default example above, the handoff file is:
@@ -36,9 +36,9 @@ test_out_200k/HCP_brain_384x384_cropped_260x311_step1100k_ema_samples/samples_10
 1. The DDPM was trained using the HCP's young adult dataset[^refDDPM] :
 
 	* This dataset consists of 1,113 subjects scanned on a customized Siemens 3T MRI system.
-	* From each patient, 10 axial slices within their Cerebrospinal fluid (CSF) regions were extracted to train the DDPM model. 
+	* From each patient, 10 axial slices within their Cerebrospinal fluid (CSF) regions were extracted to train the DDPM model.
 
-2. The no. of diffusion steps is an important parameter when running this ddpm-based MRI data generation code. 
+2. The no. of diffusion steps is an important parameter when running this ddpm-based MRI data generation code.
 
 	<p align="center">
 	  <img src="../../docs/pics/diffusion_steps.svg"  width="600">

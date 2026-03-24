@@ -150,7 +150,7 @@ if display_plot:
 print("\nSaving to-be-imaged SOMs with singlet and doublet signals to an HDF5 file: " + output_path + "test_gt_acc" + str(acceleration) + "_rsos.hdf5", \
 'with dtype set as', cmpr_dtype)
 f = h5py.File(output_path + "test_gt_acc" + str(acceleration) + "_rsos.hdf5", "w")
-f.create_dataset('H_1', data=testing_data[:te_half_size,:,:,:], dtype=cmpr_dtype)
-f.create_dataset('H_0', data=testing_data[te_half_size:,:,:,:], dtype=cmpr_dtype)
+f.create_dataset('H_1', data=testing_data[te_half_size:,:,:,:], dtype=cmpr_dtype) #singlet signals
+f.create_dataset('H_0', data=testing_data[:te_half_size,:,:,:], dtype=cmpr_dtype) #dublet signals
 f.create_dataset('L_list', data=L_list, dtype=cmpr_dtype)
 f.close()

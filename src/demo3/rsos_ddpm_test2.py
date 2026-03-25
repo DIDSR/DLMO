@@ -1,12 +1,13 @@
 # DDPM Object Forward Projection and Reconstruction Script
 #
-# This script performs forward projection and reconstruction of DDPM (Denoising Diffusion Probabilistic Models)
-# generated objects using RSOS (Root Sum of Squares) method to create test dataset.
+# This script performs forward projection and reconstruction of DDPM (Denoising Diffusion
+# Probabilistic Models) generated objects (SOMs) - with signals inserted using RSOS
+# (Root Sum of Squares) method to create test dataset.
 # It saves the reconstructions in HDF5 format.
 #
 # Command-line Options:
 #     acceleration (int): Acceleration factor for sparse sampling (2, 4, 6, or 8).
-#     object_npz_path (str, optional): Path to the DDPM-generated SOMEs with added signals from demo 2.
+#     object_hdf5_path (str, optional): Path to the DDPM-generated SOMs with added signals from demo 2.
 #
 # Usage:
 #     python rsos_ddpm_test.py [acceleration factor] [object_hdf5_path]
@@ -48,8 +49,8 @@ if not os.path.isfile(test_data_file): sys.exit("Error: Required object file is 
 # Loading SOMs -----------------------------------------------------
 print("\nReading the SOM dataset ...", flush=True)
 som_in_hf                      = h5py.File(test_data_file, mode='r')
-singlet_soms                   = som_in_hf.get('H_1')
-dublet_soms                    = som_in_hf.get('H_0')
+singlet_soms                   = som_in_hf.get('H_s')
+dublet_soms                    = som_in_hf.get('H_d')
 L_list                         = som_in_hf.get('L_list')
 # -------------------------------------------------------------------
 print('Shape of dublet SOMs:', dublet_soms.shape)
@@ -58,12 +59,11 @@ print('length of L_list (total SOMs):', len(L_list))
 
 te_half_size = dublet_soms.shape[0] # 50-50 split in our experiments
 te_tot_size  = dublet_soms.shape[0] + singlet_soms.shape[0]
-testing_data = np.concatenate((singlet_soms, dublet_soms), axis=0)
+testing_data = np.concatenate((dublet_soms, singlet_soms), axis=0)
 if display_plot: utils.multi2dplots(1, 2, testing_data[(te_half_size-1):(te_half_size+1),0, :, :], 0, \
-                 passed_fig_att={'suptitle':'example SOMs', \
-                                 'split_title': ['singlet SOM', 'doublet SOM'], \
-                                 'figsize': [8, 4]})
-sys.exit()
+                 passed_fig_att={'suptitle':'example SOMs with signals', \
+                                 'split_title': ['Doublet SOM', 'Singlet SOM'], \
+                                 'figsize': [10, 4]})
 # ----------------------------- MR acquisition settings -------------------------------------------#
 dim1, dim2   = singlet_soms.shape[2], singlet_soms.shape[3]
 n_std        = 15  # # is the always 15 for all acceleration factors ? KL: Yes
@@ -93,6 +93,7 @@ sensi_map = np.reshape(sensi_map, (1, -1, dim1, dim2))  # shaped (1, 8, 260, 311
 sensi_map = torch.tensor(sensi_map, dtype=torch_dtype)
 sensi_map = sensi_map.to(device)
 
+# --------------------------------K-SPACE ACQUISITION AND RECONSTRUCTION---------------------------#
 for acc in [acceleration]:
     cur_testing_data = np.empty(testing_data.shape)
     # ------------------------------ sparse sampling info -----------------------------------------#
@@ -102,18 +103,16 @@ for acc in [acceleration]:
         mask_dir = "masks/mask_Poisson_" + str(acc) + "_fold.npy"
         mask = np.load(mr_acq_path + mask_dir)  # shape of (260, 311)
         if display_plot:
-            utils.plot2dlayers(np.abs(mask), title='Possion disk-based \n subsampling pattern for'\
+            utils.plot2dlayers(np.abs(mask), title='Possion disk-based subsampling pattern for '\
                                +str(acc)+'x', colorbar=True, figsize=(6.4, 5.8))
         mask = np.reshape(mask, (1, 1, dim1, dim2))
         mask = torch.tensor(mask, dtype=torch.complex64)
         mask = mask.to(device)
         print("Mask shape: ", mask.shape, flush=True)  # shape of [1, 1, 260, 311]
 
-    # --------------------------------K-SPACE ACQUISITION AND RECONSTRUCTION----------------------#
-
     #----------------------------------------------------------------------------------------------
     # accelerated acquisition step
-    #------------------------------------------------------------------------------------------------------
+    #-----------------------------------------------------------------------------------------------
     for batch_index in range(int(te_tot_size / batch_size)):
         # shape of (320, 260, 311) -> 320 is batch size here
         local_batch = testing_data[batch_index * batch_size:(1 + batch_index) * batch_size,:,:,:]
@@ -137,15 +136,17 @@ for acc in [acceleration]:
         local_batch_cat = torch.reshape(local_batch_cat, (batch_size, 1, dim1, dim2))
         cur_testing_data[batch_index * batch_size:(1 + batch_index) * batch_size,:,:,:] = local_batch_cat.cpu()
 
-    # -----------------------------------Save to hdf5 files--------------------------#
-    # test data
+    if display_plot: utils.multi2dplots(1, 2, cur_testing_data[(te_half_size-1):(te_half_size+1),0, :, :], 0, \
+                 passed_fig_att={'suptitle':'reconstructed SOM examples with signals at '+str(acceleration)+'x', \
+                                 'split_title': ['Doublet SOM', 'Singlet SOM'], \
+                                 'figsize': [10, 4]})
+    # ------------------Save accelerated data to hdf5 files----------------------------------------#
     print('\nShape of the reconstructed testing data:', cur_testing_data.shape, '; and its dtype is:', cur_testing_data.dtype, flush=True)
     print('Data range (min, max) of the reconstructed testing data with signal: [%.4f, %.4f]' % (np.min(cur_testing_data), np.max(cur_testing_data)))
-
-    print("\nSaving hdf5 files to: " + output_path + "test_acc" + str(acc) + "_rsos.hdf5")
+    print("Saving hdf5 files to: " + output_path + "test_acc" + str(acc) + "_rsos.hdf5 as dtype:" + cmpr_dtype)
     f = h5py.File(output_path + "test_acc" + str(acc) + "_rsos.hdf5", "w")
-    f.create_dataset('H_1', data=cur_testing_data[:te_half_size,:,:,:], dtype=cmpr_dtype)
-    f.create_dataset('H_0', data=cur_testing_data[te_half_size:,:,:,:], dtype=cmpr_dtype)
+    f.create_dataset('H_d', data=cur_testing_data[:te_half_size,:,:,:], dtype=cmpr_dtype) #dublet
+    f.create_dataset('H_s', data=cur_testing_data[te_half_size:,:,:,:], dtype=cmpr_dtype) #singlet
     f.create_dataset('L_list', data=L_list, dtype=cmpr_dtype)
     f.close()
 
@@ -176,10 +177,16 @@ if acc > 1:
         local_batch_cat = torch.reshape(local_batch_cat, (batch_size, 1, dim1, dim2))
         cur_testing_data[batch_index * batch_size:(1 + batch_index) * batch_size,:,:,:] = local_batch_cat.cpu()
 
-    # -----------------------------------Save to hdf5 files-----------------------------------------#
-    print("\nSaving fully sampled reference hdf5 files to: " + output_path + "test_acc" + str(acc) + "_at_acc1_rsos.hdf5")
+    if display_plot: utils.multi2dplots(1, 2, cur_testing_data[(te_half_size-1):(te_half_size+1),0, :, :], 0, \
+                 passed_fig_att={'suptitle':'reconstructed SOM examples with signals at 1x', \
+                                 'split_title': ['Doublet SOM', 'Singlet SOM'], \
+                                 'figsize': [10, 4]})
+    # ----------------------Save reference data to hdf5 files-----------------------------------------#
+    print('\nShape of the reconstructed testing data at 1x is:', cur_testing_data.shape, '; and its dtype is:', cur_testing_data.dtype, flush=True)
+    print('Data range (min, max) of the reconstructed testing data with signal: [%.4f, %.4f]' % (np.min(cur_testing_data), np.max(cur_testing_data)))
+    print("Saving fully sampled reference hdf5 files to: " + output_path + "test_acc" + str(acc) + "_at_acc1_rsos.hdf5 as dtype:"+cmpr_dtype)
     f = h5py.File(output_path + "test_acc" + str(acc) + "_at_acc1_rsos.hdf5", "w")
-    f.create_dataset('H_1', data=cur_testing_data[:te_half_size,:,:,:], dtype=cmpr_dtype)
-    f.create_dataset('H_0', data=cur_testing_data[te_half_size:,:,:,:], dtype=cmpr_dtype)
+    f.create_dataset('H_d', data=cur_testing_data[:te_half_size,:,:,:], dtype=cmpr_dtype) #dublet
+    f.create_dataset('H_s', data=cur_testing_data[te_half_size:,:,:,:], dtype=cmpr_dtype) #singlet
     f.create_dataset('L_list', data=L_list, dtype=cmpr_dtype)
     f.close()

@@ -1,16 +1,17 @@
 # Doublet and Singlet Signals Insertion Script
 #
-# This script inserts doublet and singlet signals into DDPM (Denoising Diffusion Probabilistic Models) generated objects.
-# These objects are referred as SOMs. This script saves the SOMs with signals into a HDF5 file.
+# This script inserts doublet and singlet signals into DDPM (Denoising Diffusion Probabilistic Models)
+# generated objects (SOMs).These objects are referred as SOMs. This script saves the SOMs with
+# signals into a HDF5 file.
 #
 # Command-line Options:
-#     acceleration (int):      Acceleration factor for sparse sampling (2, 4, 6, or 8).
-#     contrast (float):        Signal amplitude/contrast value.
-#     signal_lengths (str):    Comma-separated signal separation lengths, e.g. "4,5,6,7,8".
-#     object_npz_path (str, optional): Path to the DDPM-generated objects from demo 1.
+#     acceleration (int)              : Acceleration factor for sparse sampling (2, 4, 6, or 8).
+#     contrast (float)                : Signal amplitude/contrast value.
+#     signal_lengths (str)            : Comma-separated signal separation lengths, e.g. "4,5,6,7,8".
+#     object_hdf5_path (str, optional): Path to the DDPM-generated objects from demo 1.
 #
 # Usage:
-#     python signal_insertion_test.py [acceleration factor] [contrast] [signal_lengths] [object_npz_path]
+#     python signal_insertion_test.py [acceleration factor] [contrast] [signal_lengths] [object_hdf5_path]
 #
 # Examples:
 #     Run with acceleration factor 4:
@@ -111,12 +112,10 @@ testing_data  = testing_data/255.0
 testing_data  = np.reshape(testing_data, (-1, dim1, dim2))
 init_test_som = testing_data.shape[0]
 
-#testing_data  = testing_data[:te_tot_size,:,:]
-#print('Shape of the loaded testing data is:', testing_data.shape, 'and its dtype is:', testing_data.dtype, flush=True)
-
 testing_data = testing_data[:te_tot_size,:,:]
 print('Out of %d SOMs, %d of them are used to test DLMO\n' % (init_test_som, testing_data.shape[0]), flush=True)  #
-print('Data range (min, max) of the DDPM generated to-be-imaged objects : [%.4f, %.4f] and its dtype is %s' % (np.min(testing_data), np.max(testing_data), testing_data.dtype))
+print('Data range (min, max) of the DDPM generated to-be-imaged objects : [%.4f, %.4f] and its \
+dtype is %s' % (np.min(testing_data), np.max(testing_data), testing_data.dtype))
 
 
 # -----------------------------------------------------------------------ADD SIGNALS--------------------------------------------------------------------------------------#
@@ -126,31 +125,27 @@ print("\nAdding signals to the DDPM-generated MR objects (SOMs)... ", flush=True
 loc_list, L_list, testing_data = add_signals.AddSignalRayleigh(testing_data, A, wid, signal_L, loc, te_half_size, te_tot_size, dim1, dim2)
 
 testing_data = np.reshape(testing_data, (te_tot_size, 1, dim1, dim2))  # second index is added to store information on coil sensitivity
-print('Total no. SOMs with singlet and dublet signals are:', te_half_size, 'and', te_half_size, '; their dtype is:', testing_data.dtype, flush=True)
-print('Data range (min, max) of these SOMs after signal insertion is: [%.4f, %.4f]' % (np.min(testing_data), np.max(testing_data)))
+print('Total no. SOMs with singlet and dublet signals are:', te_half_size, 'and', te_half_size, \
+      '; their dtype is:', testing_data.dtype, flush=True)
+print('Data range (min, max) of these SOMs after signal insertion is: [%.4f, %.4f]' \
+      % (np.min(testing_data), np.max(testing_data)))
 
 if display_plot:
 	# display some of the singlet and dublet MR images ---------------------------------------------------------------------------------------------------------------------------
 	num_L_list = [int(x[0]) for x in L_list]
 	L_str_list = [str(x) for x in num_L_list]
-	demo_h1_few = np.transpose(np.squeeze(testing_data[0:3]), axes=(0, 2, 1))
-	demo_h0_few = np.transpose(np.squeeze(testing_data[(te_half_size+3):(te_half_size+6)]), axes=(0, 2, 1))
+	demo_hd_few = np.transpose(np.squeeze(testing_data[0:3]), axes=(0, 2, 1))
+	demo_hs_few = np.transpose(np.squeeze(testing_data[(te_half_size+3):(te_half_size+6)]), axes=(0, 2, 1))
 
 	# print('signal separation length list:', L_str_list)
-	utils.multi2dplots(1, 3, demo_h1_few[:, ::-1, :], axis=0, passed_fig_att={'colorbar': False, 'suptitle':'L_list', 'split_title': L_str_list[0:3], 'figsize': [12, 5]})
-	utils. multi2dplots(1, 3, demo_h0_few[:, ::-1, :], axis=0, passed_fig_att={'colorbar': False, 'suptitle':'L_list', 'split_title': L_str_list[te_half_size+3:(te_half_size+6)], 'figsize': [12, 5]})
+	utils.multi2dplots(1, 3, demo_hd_few[:, ::-1, :], axis=0, passed_fig_att={'colorbar': False, 'suptitle':'L_list', 'split_title': L_str_list[0:3], 'figsize': [12, 5]})
+	utils.multi2dplots(1, 3, demo_hs_few[:, ::-1, :], axis=0, passed_fig_att={'colorbar': False, 'suptitle':'L_list', 'split_title': L_str_list[te_half_size+3:(te_half_size+6)], 'figsize': [12, 5]})
 
-	# print("\nSampling some demo images to: " + output_path + "test_gt_sample0[1]_rsos.npy")
-	# np.save(output_path + "test_gt_sample1_rsos.npy", testing_data[:te_half_size,:,:,:])
-	# np.save(output_path + "test_gt_sample0_rsos.npy", testing_data[te_half_size:,:,:,:])
-	# np.save(output_path + "test_gt_L_list_0_rsos.npy", L_list[:te_half_size])
-	# np.save(output_path + "test_gt_L_list_1_rsos.npy", L_list[te_half_size: ])
-
-# save objects with signal insertions into an HDF% file ----------------------------------------------------------------------------------------------------------------------------
-print("\nSaving to-be-imaged SOMs with singlet and doublet signals to an HDF5 file: " + output_path + "test_gt_acc" + str(acceleration) + "_rsos.hdf5", \
-'with dtype set as', cmpr_dtype)
+# save objects with signal insertions into an HDF5 files ----------------------------------------------------------------------------------------------------------------------------
+print("\nSaving to-be-imaged SOMs with singlet and doublet signals to an HDF5 file: " + output_path \
+      + "test_gt_acc" + str(acceleration) + "_rsos.hdf5", 'with dtype set as', cmpr_dtype)
 f = h5py.File(output_path + "test_gt_acc" + str(acceleration) + "_rsos.hdf5", "w")
-f.create_dataset('H_1', data=testing_data[te_half_size:,:,:,:], dtype=cmpr_dtype) #singlet signals
-f.create_dataset('H_0', data=testing_data[:te_half_size,:,:,:], dtype=cmpr_dtype) #dublet signals
+f.create_dataset('H_s', data=testing_data[te_half_size:,:,:,:], dtype=cmpr_dtype) #singlet signals
+f.create_dataset('H_d', data=testing_data[:te_half_size,:,:,:], dtype=cmpr_dtype) #dublet signals
 f.create_dataset('L_list', data=L_list, dtype=cmpr_dtype)
 f.close()

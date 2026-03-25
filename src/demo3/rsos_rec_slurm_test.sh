@@ -36,9 +36,8 @@ echo
 # Get start of job information
 START_TIME=`date +%s`
 host_node=$SLURMD_NODENAME
-PY_FILE=rsos_ddpm_test.py
+PY_FILE=rsos_ddpm_test.py # ensure that demo option is set as False in this python file
 
-time python ${PY_FILE} 1
 time python ${PY_FILE} 4
 time python ${PY_FILE} 8
 

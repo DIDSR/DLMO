@@ -50,11 +50,13 @@ Our forward model uses 8 coils ($S_i$) and a Poisson disk–based subsampling pa
 	 <img src="../../docs/pics/demo3_sampling_mask_4x.svg"  width="400">
 </p>
 
-Then reconstruction at each coil is combined using iFFT in the follow mannder:
+Then reconstruction at each coil is combined using iFFT in the follow manner:
 
 $$
-\hat{f}_i = \mathcal{F}^{-1} g_i
-\hat{f}_{\text{rSOS}} = \sqrt{\sum_{i=1}^{N_c}|\hat{f}_i|^2}
+\begin{align}
+\hat{f}_i = \mathcal{F}^{-1} g_i, \\\\
+\hat{f}_{\text{rSOS}} = \sqrt{\sum_{i=1}^{N_c}|\hat{f}_i|^2}.
+\end{align}
 $$
 
 Both the accelerated and fully sampled rSOS reconstructions are saved in the final HDF5 files

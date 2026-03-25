@@ -1,19 +1,20 @@
 # DDPM Object Forward Projection and Reconstruction Script
 #
-# This script performs forward projection and reconstruction of DDPM (Denoising Diffusion Probabilistic Models)
-# generated objects using RSOS (Root Sum of Squares) method to create test dataset.
+# This script performs forward projection and reconstruction of DDPM (Denoising Diffusion
+# Probabilistic Models) generated objects (SOMs) - with signals inserted using RSOS
+# (Root Sum of Squares) method to create test dataset.
 # It saves the reconstructions in HDF5 format.
 #
 # Command-line Options:
 #     acceleration (int): Acceleration factor for sparse sampling (2, 4, 6, or 8).
-#     object_npz_path (str, optional): Path to the DDPM-generated objects from demo 1.
+#     object_hdf5_path (str, optional): Path to the DDPM-generated SOMs with added signals from demo 2.
 #
 # Usage:
-#     python rsos_ddpm_test.py [acceleration factor] [object_npz_path]
+#     python rsos_ddpm_test.py [acceleration factor] [object_hdf5_path]
 #
 # Examples:
-#     Run with acceleration factor 2:
-#       python rsos_ddpm_test.py 2
+#     Run with acceleration factor 4:
+#       python rsos_ddpm_test.py 4
 #
 # Note: Ensure that all required data files and directories are properly set up before running the script.
 # To run, source the following environment
@@ -32,133 +33,89 @@ import add_signals
 import h5py
 
 # ------------------------------------- CUDA for PyTorch ------------------------------------------#
-use_cuda = torch.cuda.is_available()
-device = torch.device("cuda" if use_cuda else "cpu")
+use_cuda                       = torch.cuda.is_available()
+device                         = torch.device("cuda" if use_cuda else "cpu")
 torch.backends.cudnn.benchmark = True
+demo                           = True
+display_plot                   = True
 
-# ------------------------------ Some basic settings ----------------------------------------------#
-acceleration = int(sys.argv[1])
+# ------------------------------ Input argument settings ------------------------------------------#
+acceleration                   = int(sys.argv[1])
+default_test_data_file         = "../demo2/objects/test_gt_acc"+str(acceleration)+"_rsos.hdf5"
+test_data_file                 = sys.argv[2] if len(sys.argv) > 2 else default_test_data_file
+mr_acq_path                    = "../"
+if not os.path.isfile(test_data_file): sys.exit("Error: Required object file is missing.")
 
-default_test_data_file = "../demo5/image_acquisition_and_reconstruction/examples/DDPM_obj/samples_10000x260x311x1.npz"
-test_data_file = sys.argv[2] if len(sys.argv) > 2 else default_test_data_file
-mr_acq_path = "../"
+# Loading SOMs -----------------------------------------------------
+print("\nReading the SOM dataset ...", flush=True)
+som_in_hf                      = h5py.File(test_data_file, mode='r')
+singlet_soms                   = som_in_hf.get('H_s')
+dublet_soms                    = som_in_hf.get('H_d')
+L_list                         = som_in_hf.get('L_list')
+# -------------------------------------------------------------------
+print('Shape of dublet SOMs:', dublet_soms.shape)
+print('Shape of singlet SOMs:', singlet_soms.shape)
+print('length of L_list (total SOMs):', len(L_list))
 
-dim1, dim2 = 260, 311
-n_std = 15  # # is the always 15 for all acceleration factors ? KL: Yes
-n_coil = 8
-cmpr_dtype = 'float32'
-batch_size = 320
-
-te_half_size = 4000
-te_tot_size = 2 * te_half_size
+te_half_size = dublet_soms.shape[0] # 50-50 split in our experiments
+te_tot_size  = dublet_soms.shape[0] + singlet_soms.shape[0]
+testing_data = np.concatenate((dublet_soms, singlet_soms), axis=0)
+if display_plot: utils.multi2dplots(1, 2, testing_data[(te_half_size-1):(te_half_size+1),0, :, :], 0, \
+                 passed_fig_att={'suptitle':'example SOMs with signals', \
+                                 'split_title': ['Doublet SOM', 'Singlet SOM'], \
+                                 'figsize': [10, 4]})
+# ----------------------------- MR acquisition settings -------------------------------------------#
+dim1, dim2   = singlet_soms.shape[2], singlet_soms.shape[3]
+n_std        = 15  # # is the always 15 for all acceleration factors ? KL: Yes
+n_coil       = 8
+cmpr_dtype   = 'float32'
+batch_size   = te_half_size if demo else 320 #bs reduced for demo run
 
 if cmpr_dtype == 'float16':
     torch_dtype = torch.float16
 else:
     torch_dtype = torch.float32
 
+testing_data  = testing_data.astype(cmpr_dtype)
+print('Concatenating singlet and dublet files into shape:' , testing_data.shape, \
+      '; and its dtype is:', testing_data.dtype, flush=True)
+print('Data range ([min, max]) in testing data: [%.4f, %.4f]' % (np.min(testing_data), \
+                                                                 np.max(testing_data)))
 output_path = "./rsos_rec/"
 if not os.path.isdir(output_path): os.makedirs(output_path, exist_ok=True)
-
-# ------------------------------ Signals info -------------------------------------------------#
-loc = np.load(mr_acq_path + "mri_loc.npy")
-
-A_dict = {'1':0.3, \
-          '2':0.3, \
-          '4':0.7, \
-          '6':1.0, \
-          '8':1.3}
-A = A_dict[str(acceleration)]
-
-wid = 1.75
-
-doublet_L = [4, 5, 6, 7, 8, 9]
 
 # ----------------------------Load sensitivity map-------------------------------------------------#
 map_dir = "sensitivity_8coils.npy"
 sensi_map = np.load(mr_acq_path + map_dir)  # shaped (8, 260, 311)
+print('\nShape of the loaded sensitivity map: ', sensi_map.shape, '; and its dtype is', sensi_map.dtype, flush=True)
+if display_plot: utils.multi2dplots(2, 4, (sensi_map), 0, passed_fig_att={'suptitle':'8-coiled sensitivity maps', 'figsize': [12, 4]})
 sensi_map = np.reshape(sensi_map, (1, -1, dim1, dim2))  # shaped (1, 8, 260, 311)
 sensi_map = torch.tensor(sensi_map, dtype=torch_dtype)
 sensi_map = sensi_map.to(device)
-print('shape of the loaded sensitivity map: ', sensi_map.shape, 'and its dtype is', sensi_map.dtype, flush=True)
 
-# ----------------------------------------------Loading the testing data--------------------------#
-print("\nReading the test dataset ...", flush=True)
-
-# testing_data = utils.list_all_npy_files(test_data_path, cmpr_dtype=cmpr_dtype, unity_normalize=True)
-
-if not os.path.isfile(test_data_file):
-    print("Input object file not found: " + test_data_file, flush=True)
-    sys.exit(1)
-
-testing_data = np.load(test_data_file)
-testing_data  = testing_data.f.arr_0
-testing_data  = np.squeeze(testing_data)
-
-testing_data = testing_data.astype(cmpr_dtype)
-testing_data = testing_data/255.0
-
-testing_data = np.reshape(testing_data, (-1, dim1, dim2))
-init_test_som = testing_data.shape[0]
-
-testing_data = testing_data[:te_tot_size,:,:]
-
-print('Shape of the loaded testing data is:', testing_data.shape, 'and its dtype is:', testing_data.dtype, flush=True)
-
-testing_data = testing_data[:te_tot_size,:,:]
-print('Out of %d SOMs, %d of them are used to test DLMO\n' % (init_test_som, testing_data.shape[0]), flush=True)  #
-print('min and max in testing data: [%.4f, %.4f]' % (np.min(testing_data), np.max(testing_data)))
-
-# ----------------------------------------------ADD SIGNALS--------------------------#
-# testing data
-print("\nAdding signal to testing objects ... ", flush=True)
-
-loc_list, L_list, testing_data = add_signals.AddSignalRayleigh(testing_data, A, wid, doublet_L, loc, te_half_size, te_tot_size, dim1, dim2)
-
-testing_data = np.reshape(testing_data, (te_tot_size, 1, dim1, dim2))  # second index stores info on coil
-
-print('shape of loaded test data:', testing_data.shape, ', dtype of testing data:', \
-testing_data.dtype, ', no. of doublet SOM in the test set:', te_half_size, flush=True)
-
-print('min and max in testing data with signal: [%.4f, %.4f]' % (np.min(testing_data), np.max(testing_data)))
-
-print("\nSaving hdf5 files to: " + output_path + "test_gt_acc" + str(acceleration) + "_rsos.hdf5")
-f = h5py.File(output_path + "test_gt_acc" + str(acceleration) + "_rsos.hdf5", "w")
-f.create_dataset('H_1', data=testing_data[:te_half_size,:,:,:], dtype=cmpr_dtype)
-f.create_dataset('H_0', data=testing_data[te_half_size:,:,:,:], dtype=cmpr_dtype)
-f.create_dataset('L_list', data=L_list, dtype=cmpr_dtype)
-
-# # a few samples
-# print("\nSampling some images to: " + output_path + "test_gt_sample0[1]_rsos.npy")
-# np.save(output_path + "test_gt_sample1_rsos.npy", testing_data[:10,:,:,:])
-# np.save(output_path + "test_gt_sample0_rsos.npy", testing_data[te_half_size:te_half_size + 10,:,:,:])
-# np.save(output_path + "test_gt_L_list_0_rsos.npy", L_list[:10])
-# np.save(output_path + "test_gt_L_list_1_rsos.npy", L_list[te_half_size:te_half_size + 10])
-
-# ------------------------------ Forward project test data -------------------------------------------------#
-
+# --------------------------------K-SPACE ACQUISITION AND RECONSTRUCTION---------------------------#
 for acc in [acceleration]:
     cur_testing_data = np.empty(testing_data.shape)
-
-    # ------------------------------ sparse sampling info -------------------------------------------------#
+    # ------------------------------ sparse sampling info -----------------------------------------#
     if acc > 1:
         print('Acceleration factor: ' + str(acc) + 'x')
         # Load mask
         mask_dir = "masks/mask_Poisson_" + str(acc) + "_fold.npy"
         mask = np.load(mr_acq_path + mask_dir)  # shape of (260, 311)
+        if display_plot:
+            utils.plot2dlayers(np.abs(mask), title='Possion disk-based subsampling pattern for '\
+                               +str(acc)+'x', colorbar=True, figsize=(6.4, 5.8))
         mask = np.reshape(mask, (1, 1, dim1, dim2))
         mask = torch.tensor(mask, dtype=torch.complex64)
         mask = mask.to(device)
         print("Mask shape: ", mask.shape, flush=True)  # shape of [1, 1, 260, 311]
 
-    # -----------------------------------K-SPACE ACQUISITION AND RECONSTRUCTION--------------------------#
-
-    # testing data
+    #----------------------------------------------------------------------------------------------
+    # accelerated acquisition step
+    #-----------------------------------------------------------------------------------------------
     for batch_index in range(int(te_tot_size / batch_size)):
-
         # shape of (320, 260, 311) -> 320 is batch size here
         local_batch = testing_data[batch_index * batch_size:(1 + batch_index) * batch_size,:,:,:]
-
         local_batch = np.repeat(local_batch, n_coil, axis=1)  # shaped (320, 8, 260, 311)
 
         # Transfer to gpu device and into k-space measurement with noise.
@@ -179,60 +136,57 @@ for acc in [acceleration]:
         local_batch_cat = torch.reshape(local_batch_cat, (batch_size, 1, dim1, dim2))
         cur_testing_data[batch_index * batch_size:(1 + batch_index) * batch_size,:,:,:] = local_batch_cat.cpu()
 
-    # -----------------------------------Save to hdf5 files--------------------------#
-    # test data
-
-    print('min and max in reconstructed testing data with signal: [%.4f, %.4f]' % (np.min(cur_testing_data), np.max(cur_testing_data)))
-
-    print("\nSaving hdf5 files to: " + output_path + "test_acc" + str(acc) + "_rsos.hdf5")
+    if display_plot: utils.multi2dplots(1, 2, cur_testing_data[(te_half_size-1):(te_half_size+1),0, :, :], 0, \
+                 passed_fig_att={'suptitle':'reconstructed SOM examples with signals at '+str(acceleration)+'x', \
+                                 'split_title': ['Doublet SOM', 'Singlet SOM'], \
+                                 'figsize': [10, 4]})
+    # ------------------Save accelerated data to hdf5 files----------------------------------------#
+    print('\nShape of the reconstructed testing data:', cur_testing_data.shape, '; and its dtype is:', cur_testing_data.dtype, flush=True)
+    print('Data range (min, max) of the reconstructed testing data with signal: [%.4f, %.4f]' % (np.min(cur_testing_data), np.max(cur_testing_data)))
+    print("Saving hdf5 files to: " + output_path + "test_acc" + str(acc) + "_rsos.hdf5 as dtype:" + cmpr_dtype)
     f = h5py.File(output_path + "test_acc" + str(acc) + "_rsos.hdf5", "w")
-    f.create_dataset('H_1', data=cur_testing_data[:te_half_size,:,:,:], dtype=cmpr_dtype)
-    f.create_dataset('H_0', data=cur_testing_data[te_half_size:,:,:,:], dtype=cmpr_dtype)
+    f.create_dataset('H_d', data=cur_testing_data[:te_half_size,:,:,:], dtype=cmpr_dtype) #dublet
+    f.create_dataset('H_s', data=cur_testing_data[te_half_size:,:,:,:], dtype=cmpr_dtype) #singlet
     f.create_dataset('L_list', data=L_list, dtype=cmpr_dtype)
     f.close()
 
-    # # a few samples
-    # print("\nSampling some images to: " + output_path + "test_acc" + str(acc) + "_sample0[1]_rsos.npy")
-    # np.save(output_path + "test_acc" + str(acc) + "_sample1_rsos.npy", cur_testing_data[:10,:,:,:])
-    # np.save(output_path + "test_acc" + str(acc) + "_sample0_rsos.npy", cur_testing_data[te_half_size:te_half_size + 10,:,:,:])
-    # np.save(output_path + "test_acc" + str(acc) + "_L_list_0_rsos.npy", L_list[:10])
-    # np.save(output_path + "test_acc" + str(acc) + "_L_list_1_rsos.npy", L_list[te_half_size:te_half_size + 10])
+#------------------------------------------------------------------------------------------------------
+# acquiring fully sampled standard-of-care reference counterpart for the accelerated reconstruction
+#------------------------------------------------------------------------------------------------------
+if acc > 1:
+    # Acc x1
+    cur_testing_data = np.empty(testing_data.shape)
+    for batch_index in range(int(te_tot_size / batch_size)):
+        # shape of (320, 260, 311) -> 320 is batch size here
+        local_batch = testing_data[batch_index * batch_size:(1 + batch_index) * batch_size,:,:,:]
 
+        local_batch = np.repeat(local_batch, n_coil, axis=1)  # shaped (320, 8, 260, 311)
 
+        # Transfer to gpu device and into k-space measurement with noise.
+        local_batch = torch.tensor(local_batch, dtype=torch.float32).to(device)
+        local_batch = local_batch * sensi_map
+        local_batch = torch.fft.fftshift(input=torch.fft.fft2(local_batch), dim=(2, 3))
+        local_batch = torch.normal(local_batch, n_std)
 
-# Acc x1
-cur_testing_data = np.empty(testing_data.shape)
-# -----------------------------------K-SPACE ACQUISITION AND RECONSTRUCTION--------------------------#
+        # local_batch_k = torch.tensor(testing_data_k[batch_index * batch_size:(1 + batch_index) * batch_size,:,:,:]).to(device)
+        local_batch_k = local_batch
+        local_batch_recs = torch.fft.ifft2(local_batch_k)
 
-# testing data
-for batch_index in range(int(te_tot_size / batch_size)):
+        local_batch_cat = torch.square(torch.abs(local_batch_recs))
+        local_batch_cat = torch.sqrt(torch.sum(input=local_batch_cat, dim=1))
+        local_batch_cat = torch.reshape(local_batch_cat, (batch_size, 1, dim1, dim2))
+        cur_testing_data[batch_index * batch_size:(1 + batch_index) * batch_size,:,:,:] = local_batch_cat.cpu()
 
-    # shape of (320, 260, 311) -> 320 is batch size here
-    local_batch = testing_data[batch_index * batch_size:(1 + batch_index) * batch_size,:,:,:]
-
-    local_batch = np.repeat(local_batch, n_coil, axis=1)  # shaped (320, 8, 260, 311)
-
-    # Transfer to gpu device and into k-space measurement with noise.
-    local_batch = torch.tensor(local_batch, dtype=torch.float32).to(device)
-    local_batch = local_batch * sensi_map
-    local_batch = torch.fft.fftshift(input=torch.fft.fft2(local_batch), dim=(2, 3))
-    local_batch = torch.normal(local_batch, n_std)
-
-    # local_batch_k = torch.tensor(testing_data_k[batch_index * batch_size:(1 + batch_index) * batch_size,:,:,:]).to(device)
-    local_batch_k = local_batch
-    local_batch_recs = torch.fft.ifft2(local_batch_k)
-
-    local_batch_cat = torch.square(torch.abs(local_batch_recs))
-    local_batch_cat = torch.sqrt(torch.sum(input=local_batch_cat, dim=1))
-    local_batch_cat = torch.reshape(local_batch_cat, (batch_size, 1, dim1, dim2))
-    cur_testing_data[batch_index * batch_size:(1 + batch_index) * batch_size,:,:,:] = local_batch_cat.cpu()
-
-# -----------------------------------Save to hdf5 files--------------------------#
-# test data
-
-print("\nSaving hdf5 files to: " + output_path + "test_acc" + str(acc) + "_at_acc1_rsos.hdf5")
-f = h5py.File(output_path + "test_acc" + str(acc) + "_at_acc1_rsos.hdf5", "w")
-f.create_dataset('H_1', data=cur_testing_data[:te_half_size,:,:,:], dtype=cmpr_dtype)
-f.create_dataset('H_0', data=cur_testing_data[te_half_size:,:,:,:], dtype=cmpr_dtype)
-f.create_dataset('L_list', data=L_list, dtype=cmpr_dtype)
-f.close()
+    if display_plot: utils.multi2dplots(1, 2, cur_testing_data[(te_half_size-1):(te_half_size+1),0, :, :], 0, \
+                 passed_fig_att={'suptitle':'reconstructed SOM examples with signals at 1x', \
+                                 'split_title': ['Doublet SOM', 'Singlet SOM'], \
+                                 'figsize': [10, 4]})
+    # ----------------------Save reference data to hdf5 files-----------------------------------------#
+    print('\nShape of the reconstructed testing data at 1x is:', cur_testing_data.shape, '; and its dtype is:', cur_testing_data.dtype, flush=True)
+    print('Data range (min, max) of the reconstructed testing data with signal: [%.4f, %.4f]' % (np.min(cur_testing_data), np.max(cur_testing_data)))
+    print("Saving fully sampled reference hdf5 files to: " + output_path + "test_acc" + str(acc) + "_at_acc1_rsos.hdf5 as dtype:"+cmpr_dtype)
+    f = h5py.File(output_path + "test_acc" + str(acc) + "_at_acc1_rsos.hdf5", "w")
+    f.create_dataset('H_d', data=cur_testing_data[:te_half_size,:,:,:], dtype=cmpr_dtype) #dublet
+    f.create_dataset('H_s', data=cur_testing_data[te_half_size:,:,:,:], dtype=cmpr_dtype) #singlet
+    f.create_dataset('L_list', data=L_list, dtype=cmpr_dtype)
+    f.close()

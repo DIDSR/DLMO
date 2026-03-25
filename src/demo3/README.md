@@ -27,7 +27,7 @@ in the ./rsos_rec/ folder. Each HDF5 file contains the following datasets: H_s f
 reconstructions, H_d for doublet image reconstructions, and L_list for the signal lengths
 corresponding to each reconstructed image.
 
-A couple of MR SOMs with the doublet signal as inputs,$f(r)$, to this code.
+A couple of MR SOMs with the doublet signal as inputs, $f(r)$ , to this code.
 
 <p align="center">
 	 <img src="../../docs/pics/demo3_f.svg"  width="600">
@@ -56,6 +56,7 @@ $$
 \hat{f}_i = \mathcal{F}^{-1} g_i
 \hat{f}_{\text{rSOS}} = \sqrt{\sum_{i=1}^{N_c}|\hat{f}_i|^2}
 $$
+
 Both the accelerated and fully sampled rSOS reconstructions are saved in the final HDF5 files
 using this script.
 

@@ -27,39 +27,42 @@ in the ./rsos_rec/ folder. Each HDF5 file contains the following datasets: H_s f
 reconstructions, H_d for doublet image reconstructions, and L_list for the signal lengths
 corresponding to each reconstructed image.
 
-A couple of MR SOMs with the doublet signal as inputs,`f(r)`, to this code.
+A couple of MR SOMs with the doublet signal as inputs,$f(r)$, to this code.
 
-<p align="left">
+<p align="center">
 	 <img src="../../docs/pics/demo3_f.svg"  width="600">
 </p>
 
 The FFT data collected at each coil is modeled as
 
-`g_i = \Phi \mathcal{F} S_i f(r) + n_i,`
+$$
+g_i = \Phi \mathcal{F} S_i f(r) + n_i,
+$$
 
-where `n_i` denotes zero-mean Gaussian noise at each coil with a standard deviation set as 15.
-Our forward model uses 8 coils (`S_i`) and a Poisson disk–based subsampling pattern (`\Phi`), as shown below:
+where $n_i$ denotes zero-mean Gaussian noise at each coil with a standard deviation set as 15.
+Our forward model uses 8 coils ($S_i$) and a Poisson disk–based subsampling pattern ($\Phi$), as shown below:
 
-<p align="left">
+<p align="center">
 	 <img src="../../docs/pics/sensi_map.svg"  width="800">
 </p>
 
-<p align="left">
+<p align="center">
 	 <img src="../../docs/pics/demo3_sampling_mask_4x.svg"  width="400">
 </p>
 
 Then reconstruction at each coil is combined using iFFT in the follow mannder:
 
-`\hat{f}_i = \mathcal{F}^{-1} g_i`
-`\hat{f}_{\text{rSOS}} = \sqrt{\sum_{i=1}^{N_c}|\hat{f}_i|^2}`
-
+$$
+\hat{f}_i = \mathcal{F}^{-1} g_i
+\hat{f}_{\text{rSOS}} = \sqrt{\sum_{i=1}^{N_c}|\hat{f}_i|^2}
+$$
 Both the accelerated and fully sampled rSOS reconstructions are saved in the final HDF5 files
 using this script.
 
-<p align="left">
+<p align="center">
 	 <img src="../../docs/pics/demo3_fhat_4x.svg"  width="600">
 </p>
 
-<p align="left">
+<p align="center">
 	 <img src="../../docs/pics/demo3_fhat_1x.svg"  width="600">
 </p>

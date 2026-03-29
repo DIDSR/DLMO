@@ -27,7 +27,7 @@ in the ./rsos_rec/ folder. Each HDF5 file contains the following datasets: H_s f
 reconstructions, H_d for doublet image reconstructions, and L_list for the signal lengths
 corresponding to each reconstructed image.
 
-A couple of MR SOMs with the doublet signal as inputs, $f(r)$ , to this code.
+A couple of MR SOMs with the doublet and singlet signals as inputs, $f(r)$ , to this code.
 
 <p align="center">
 	 <img src="../../docs/pics/demo3_f.svg"  width="600">

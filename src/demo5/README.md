@@ -4,7 +4,7 @@ This demo uploads pretrained weights and DDPM-generated objects(SOMs) uploaded i
 
 1. [*Synthetic defect insertion*](https://github.com/DIDSR/DLMO/tree/main/src/demo2)
 
-   Insert the signlet and doublet signals corresponding to acceleration factor 4 and store the corresponding MR images into a hdf5 file as:
+   Insert the singlet and doublet signals corresponding to an acceleration factor of 4 and store the resulting MR images in an HDF5 file as follows:
    ```
    cd src/demo2
    python signal_insertion_test.py 4 0.7 '4,5,6,7,8'
@@ -12,7 +12,7 @@ This demo uploads pretrained weights and DDPM-generated objects(SOMs) uploaded i
 
 2. [*MR acquisition and reconstruction*](https://github.com/DIDSR/DLMO/tree/main/src/demo3)
 
-   Read the hdf5 file from step 1 and perform rSOS-based conventional reconstruction at the accelerated rate (that serves as baseline lower bound) and fully sampled rate (which will serve as reference upper bound)
+   Read the HDF5 file from Step 1 and perform rSOS-based conventional reconstruction at both the accelerated rate (serving as the baseline lower bound) and the fully sampled rate (serving as the reference upper bound).
    ```
    cd src/demo3
    python rsos_ddpm_test.py 4

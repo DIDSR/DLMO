@@ -33,7 +33,7 @@ test_out_200k/HCP_brain_384x384_cropped_260x311_step1100k_ema_samples/samples_10
 
 ### Additional Guides:
 
-1. The DDPM was trained using the HCP's young adult dataset[^refDDPM] :
+1. The DDPM[^refDDPM] was trained using the HCP's young adult dataset[^refHCP] :
 
 	* This dataset consists of 1,113 subjects scanned on a customized Siemens 3T MRI system.
 	* From each patient, 10 axial slices within their Cerebrospinal fluid (CSF) regions were extracted to train the DDPM model.
@@ -56,3 +56,4 @@ test_out_200k/HCP_brain_384x384_cropped_260x311_step1100k_ema_samples/samples_10
 
 
 [^refDDPM]: J. Ho, A. Jain, and P. Abbeel, “Denoising diffusion probabilistic models,” Advances in neural information processing systems, vol. 33, pp. 6840–6851, 2020.
+[^refHCP]: “HCP-Young Adult 2025,” https://www.humanconnectome.org/study/hcp-young-adult/document/hcp-young-adult-2025-release, 2025.

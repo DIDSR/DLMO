@@ -62,9 +62,10 @@ class DatasetFromHdf5(Dataset):
         if os.path.isfile(file_path):
             if (os.path.exists(file_path) == True):
                 hf = h5py.File(file_path, mode='r')
-                H0 = hf.get("H_0")
-                H1 = hf.get("H_1")
-                self.data = np.append(H0, H1, axis=0)
+                H_s = hf.get("H_s") #H_O is signlet 
+                H_d = hf.get("H_d") #H_1 is dublet
+                # appended as dublet and then signlet -> aligning with how signal was added in demo2
+                self.data = np.append(H_d, H_s, axis=0) #np.append(H0, H1, axis=0)
             else:
                 if hvd.rank() == 0:
                     print('\n-------------------------------------------------------------')
@@ -74,7 +75,7 @@ class DatasetFromHdf5(Dataset):
         else:
             if hvd.rank() == 0:
                     print('\n----------------------------------------------------------------------------')
-                    print("ERROR! Issues related to training/tuning path. Re-check training-fname option.")
+                    print("ERROR! Issues related to training/tuning path. Re-check data-fname option.")
                     print('------------------------------------------------------------------------------')
                     sys.exit()
         if np.mod(self.data.shape[0], mod_num) != 0:

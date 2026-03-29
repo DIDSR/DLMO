@@ -1,10 +1,10 @@
 # AI reconstruction
 
-Demo scripts for AI-based reconstruction methods. A U-Net example is included. The test data and its predictions are large files, so they are not provided here. To obtain those, please generate them using scripts in `../image_acquisition_and_reconstruction`.
+Demo scripts for AI-based reconstruction methods are provided, including a U-Net example. Note that, in many of these demo runs, we use only 80 SOMs instead of the 8,000 used in our DLMO paper.
 
 Usage:
 ```
-python DL_denoiser_pred.py [-h] [--task TASK] [--test-path TEST_PATH] [--acceleration ACCELERATION]
+python DL_denoiser_eval.py [-h] [--task TASK] [--test-path TEST_PATH] [--acceleration ACCELERATION]
                                    [--model_name MODEL_NAME] [--num-channels NUM_CHANNELS] [--batch-size BATCH_SIZE]
                                    [--batches-per-allreduce BATCHES_PER_ALLREDUCE] [--fp16-allreduce]
                                    [--pretrained-model-path PRETRAINED_MODEL_PATH]

@@ -1,7 +1,7 @@
 # Accelerated MR images are post-processed using a trained CNN
 # Command-line Options:
 #     --task: Task type (detection/rayleigh). Default is 'rayleigh'.
-#     --test-path: Path to noisy images for testing.
+#     --test-path: Path to subsampled MR images for testing.
 #     --acceleration: Acceleration factor (2, 4, 6, or 8).
 #     --model_name: CNN denoiser model (cnn3, redcnn, udncnn, dncnn, unet).
 #     --num-channels: Number of channels (1 for grayscale, 3 for RGB). Default is 1.
@@ -33,23 +33,20 @@ import math
 import sys
 
 from dataset import DatasetFromHdf5
-import scipy.io
 import utils
 from tqdm import tqdm
 import add_signals
 
-# from torchsummary import summary
-
+from torchsummary import summary
+import h5py 
 import time
 
 start_time = time.time()
 # --------------------------------------Some basic settings ---------------------------------------#
 parser = argparse.ArgumentParser(description='Predict denoised images using a trained CNN denoiser.')
+parser.add_argument('--test-path', help='Path to sumsampled images for applying trained model.')
 parser.add_argument('--task', default='rayleigh', help='Task type (detection/rayleigh).')
-parser.add_argument('--test-path', \
-                    help='Path to noisy images for test.')
-parser.add_argument('--acceleration', type=int, default=2, \
-                    help='Acceleration factor in range of 2 to 12.')
+parser.add_argument('--acceleration', type=int, default=2, help='Acceleration factor in range of 2 to 12.')
 parser.add_argument('--model_name', help='CNN denoiser model.')
 parser.add_argument('--num-channels', type=int, default=1, help='3 for rgb images and 1 for gray scale images')
 parser.add_argument('--batch-size', help='Batch size.', type=int)
@@ -68,6 +65,7 @@ args = parser.parse_args()
 
 # task type (detection/rayleigh)
 # Our DLMO paper covers rayleigh (discrimination task)
+# here task type is only used as name tag assign input and output path file
 task_type = args.task
 if task_type not in ['detection', 'rayleigh']: sys.exit('Invalid task type.')
 
@@ -82,16 +80,14 @@ num_channels          = args.num_channels
 batch_size            = args.batch_size
 batches_per_allreduce = args.batches_per_allreduce
 allreduce_batch_size  = batch_size * batches_per_allreduce
-test_data_path        = args.test_path
-output_path           = "./ai_rec_prediction/" + model_name + "_" + task_type + "_acc_" \
-                        + str(acceleration) + "/"
+test_data_in_path     = args.test_path
+test_data_in_file     = test_data_in_path + "/test_acc" + str(acceleration) + "_rsos.hdf5" #input file path
+output_path           = "./ai_rec/test_acc"  + str(acceleration) + "_" + model_name   # output file path
 if not os.path.isdir(output_path): os.makedirs(output_path, exist_ok=True)
 
 dim1, dim2      = 260, 311
 pad             = (4, 5, 6, 6) # zero-padding for unet training
 cmpr_dtype      = 'float32'
-test_half_size  = 4000
-test_tot_size   = 2 * test_half_size
 
 # -----------------------------------------------------------
 # importing architectures:
@@ -146,6 +142,7 @@ if hvd.rank() == 0:
   print("\nNo. of gpus used:", hvd.size())
   for i in args.__dict__: print((i), ':', args.__dict__[i])
   print('pretrained model full path:', pretrained_model_path)
+  print("testing data full path    : " + test_data_in_file, flush=True)
   print('\n----------------------------------------\n')
 
 # Horovod: print logs on the first worker
@@ -166,7 +163,6 @@ if hvd.rank() == 0:
     checkpoint = torch.load(pretrained_model_path)
     model.load_state_dict(checkpoint['model'])
     print("Loaded trained network from:", pretrained_model_path, flush=True)
-#sys.exit()
 
 # Horovod: broadcast parameters & optimizer state.
 hvd.broadcast_parameters(model.state_dict(), root_rank=0)
@@ -175,12 +171,7 @@ hvd.broadcast_parameters(model.state_dict(), root_rank=0)
 # load test data
 # ==================================================================
 kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
-
-test_data_file = test_data_path + "/" + \
-                 "test_acc" + str(acceleration) + "_rsos.hdf5"
-if hvd.rank() == 0: print("\nReading the test dataset from: " + test_data_file, flush=True)
-
-test_dataset = DatasetFromHdf5(hvd=hvd, file_path=test_data_file, \
+test_dataset = DatasetFromHdf5(hvd=hvd, file_path=test_data_in_file, \
                               mod_num=hvd.size() * batch_size)
 test_sampler = torch.utils.data.distributed.DistributedSampler(
     test_dataset, num_replicas=hvd.size(), rank=hvd.rank(), shuffle=False)
@@ -188,44 +179,53 @@ test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,
                                          sampler=test_sampler, **kwargs)
 
 if hvd.rank() == 0:
-    print('%d denoisy images are used to test CNN denoiser\n' % (len(test_dataset.data)), flush=True)  #
-    print('min and max in test data: [%.4f, %.4f]' % (np.min(test_dataset.data), np.max(test_dataset.data)), flush=True)
-    print('Shape of the loaded test data is:', test_dataset.data[0].shape, 'and its dtype is:', test_dataset.data[0].dtype, flush=True)
+    print('Trained %s is applied to %d subsampled MR images\n' % (args.model_name, len(test_dataset.data)), flush=True)  #
+    print('Data range [min, max] in this set: [%.4f, %.4f]' % (np.min(test_dataset.data), np.max(test_dataset.data)), flush=True)
+    print('Shape of the loaded data is:', test_dataset.data.shape, 'and its dtype is:', test_dataset.data[0].dtype, flush=True)
+    if args.model_name == 'unet':
+        print('Data is padded in x-y dim to be', dim1+12, dim2+9)
+    print('Below is the %s architecture' %(args.model_name))
+    summary(model, (args.num_channels, dim1+12, dim2+9))
+    test_tot_size   = test_dataset.data.shape[0]
+    test_half_size  = int(test_tot_size/2)
 
 # ==================================================================
 # test the model
 # ==================================================================
-if hvd.rank() == 0: print("Denoising images .... ")
+if hvd.rank() == 0: print("Post-processing the MR images .... ")
 test_loss = utils.Metric('test_loss')
 
 noisy_imgs = np.empty([test_tot_size, dim1, dim2])
-preds = np.empty([test_tot_size, dim1, dim2])
+preds      = np.empty([test_tot_size, dim1, dim2])
 # i  = 0
 with tqdm(total=len(test_loader),
         disable=not verbose) as t:
     for batch_idx, data in enumerate(test_loader):
         if use_cuda: data = data.cuda()
         model.eval()
-        if hvd.rank() == 0: print("data shape before", data.shape)
         if args.model_name == 'unet':
             data = F.pad(data, pad)
-        if hvd.rank() == 0: print("data shape after padding", data.shape)
-        sys.exit()
         output = model(data)
         if args.model_name == 'unet':
             output = output[:,:, 6:6 + dim1, 4:dim2 + 4]
             data = data[:,:, 6:6 + dim1, 4:dim2 + 4]
-        preds[batch_size * batch_idx:batch_size * (batch_idx + 1),:,:] = np.squeeze(output.cpu().detach().numpy())
+        preds[batch_size * batch_idx:batch_size * (batch_idx + 1),:,:]      = np.squeeze(output.cpu().detach().numpy())
         noisy_imgs[batch_size * batch_idx:batch_size * (batch_idx + 1),:,:] = np.squeeze(data.cpu().detach().numpy())
-
         # i = i + 1
         t.update(1)
 
-np.save(output_path + "/preds_detection.npy", preds)
-np.save(output_path + "/noisy_detection.npy", noisy_imgs)
-
-# save a few examples
-# np.save(output_path + "/preds_examples_0_L" + str(L) + ".npy", preds[:10,:,:])
-# np.save(output_path + "/noisy_examples_0_L" + str(L) + ".npy", noisy_imgs[:10,:,:])
-# np.save(output_path + "/preds_examples_1_L" + str(L) + ".npy", preds[int(len(test_dataset.data) / 2):int(len(test_dataset.data) / 2) + 10,:,:])
-# np.save(output_path + "/noisy_examples_1_L" + str(L) + ".npy", noisy_imgs[int(len(test_dataset.data) / 2):int(len(test_dataset.data) / 2) + 10,:,:])
+if hvd.rank()==0:
+    if args.model_name == 'unet':
+        utils.multi2dplots(1, 2, preds[(test_half_size-1):(test_half_size+1), :, :], 0, \
+                 passed_fig_att={'suptitle':'reconstructed SOM examples with signals at '+str(acceleration)+'x', \
+                                 'split_title': ['Unet on Doublet SOM', 'Unet on Singlet SOM'], \
+                                 'figsize': [10, 4]})
+    preds  = np.reshape(preds, (test_tot_size, 1, dim1, dim2))
+    print('\nShape of the postprocessed data is:', preds.shape, '; and its dtype is:', preds.dtype, flush=True)
+    print('Data range (min, max) of the reconstructed testing data with signal: [%.4f, %.4f]' % (np.min(preds), np.max(preds)))
+    print("Saving hdf5 files to: " + output_path + ".hdf5 as dtype:" + cmpr_dtype)
+    f = h5py.File(output_path + ".hdf5", "w")
+    f.create_dataset('H_d', data=preds[:test_half_size,:,:,:], dtype=cmpr_dtype) #dublet
+    f.create_dataset('H_s', data=preds[test_half_size:,:,:,:], dtype=cmpr_dtype) #singlet
+    #f.create_dataset('L_list', data=L_list, dtype=cmpr_dtype)
+    f.close()

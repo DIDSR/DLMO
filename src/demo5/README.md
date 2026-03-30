@@ -1,6 +1,6 @@
 # A simple example of the DLMO framework
 
-This demo uploads pretrained weights and DDPM-generated objects(SOMs) uploaded in this repository and walks through previous demos (demo2, demo3) to demostrate the application of DLMO observer model to get the descrimination-based output relative to different MR reconstruction methods (for a use case study of acceleration factor by 4). It contains three parts that should be run in order:
+This demo uploads pretrained weights and DDPM-generated objects(SOMs) uploaded in this repository and walks through previous demos (demo2, demo3) to demostrate the application of DLMO observer model to get the descrimination-based output relative to different MR reconstruction methods (for a use case study of acceleration factor by 4). It contains four parts that should be run in order:
 
 1. [*Synthetic defect insertion*](https://github.com/DIDSR/DLMO/tree/main/src/demo2)
 
@@ -28,10 +28,14 @@ This demo uploads pretrained weights and DDPM-generated objects(SOMs) uploaded i
 
 4. [*DLMO testing*](https://github.com/DIDSR/DLMO/tree/main/src/demo5/DLMO_test)
 
-   Estimate the probability of a doublet signal using the provided trained DLMO checkpoints, either on the rSOS reconstructions from step 1 or on the CNN-denoised outputs from step 2.
+   Apply model observers to the three HDF5 files from Steps 1-3 and compute PC (AUC) by signal length (4-8 mm) to generate a summarized plot:
    ```
    cd ../DLMO_test
-   python dlmo_test_hvd.py --task rayleigh --test-path ../image_acquisition_and_reconstruction/examples/img_w_signal --acceleration 4 --batch-size 6 --pretrained-model-path ./trained_model/mri_cnn_io_acc_4_hvd/hvd_cpts --pretrained-model-epoch 50
+   python step4_eval.py
    ```
+
+   This script runs `dlmo_test_hvd.py` three times (once for each HDF5 file) and saves:
+   - Figure: `./dlmo_predictions/step4.png`
+   - CSV: `./dlmo_predictions/step4.csv`
 
    Demo 4 contains the separate DLMO training workflow if you need to retrain or refine the observer models.

@@ -79,8 +79,19 @@ class DatasetFromHdf5(Dataset):
         if os.path.isfile(file_path):
             if (os.path.exists(file_path) == True):
                 hf = h5py.File(file_path, mode='r')
-                H0 = hf.get("H_0")
-                H1 = hf.get("H_1")
+                # Support both (H_0, H_1) and (H_s, H_d) key formats
+                if "H_0" in hf and "H_1" in hf:
+                    H0 = hf.get("H_0")
+                    H1 = hf.get("H_1")
+                elif "H_s" in hf and "H_d" in hf:
+                    H0 = hf.get("H_s")
+                    H1 = hf.get("H_d")
+                else:
+                    if hvd.rank() == 0:
+                        print('\n-------------------------------------------------------------')
+                        print("ERROR! HDF5 must have (H_0, H_1) or (H_s, H_d) keys.")
+                        print('--------------------------------------------------------------')
+                    sys.exit()
                 self.data = np.append(H0, H1, axis=0)
                 self.target = np.concatenate((np.ones([H0.shape[0], 1], dtype=H0.dtype), np.zeros([H1.shape[0], 1], dtype=H1.dtype)), axis=0)
             else:

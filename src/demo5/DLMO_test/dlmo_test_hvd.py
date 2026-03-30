@@ -45,6 +45,8 @@ parser = argparse.ArgumentParser(description='Estimate the probability of signal
 parser.add_argument('--task', default='rayleigh', help='Task type (detection/rayleigh).')
 parser.add_argument('--test-path', \
                     help='Path to images for test.')
+parser.add_argument('--hdf5-file', default=None, \
+                    help='Optional direct HDF5 file path (overrides --test-path naming).')
 parser.add_argument('--is-cnn-denoised', \
                     action='store_true', default=False,
                     help='Whether the input images are cnn-denoised.')
@@ -63,6 +65,8 @@ parser.add_argument('--pretrained-model-path', help='The previous trained model 
 parser.add_argument('--pretrained-model-checkpoint-format', default='checkpoint-{epoch}.pth.tar',
                     help='checkpoint file format')
 parser.add_argument('--pretrained-model-epoch', type=int, default=150, help='Transfered learning based on a previous trained model (provide epoch).')
+parser.add_argument('--preds-tag', default=None, \
+                    help='Optional tag for prediction filename (saved as preds_<tag>.npy).')
 
 args = parser.parse_args()
 
@@ -156,8 +160,11 @@ hvd.broadcast_parameters(model.state_dict(), root_rank=0)
 kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
 
 if not args.is_cnn_denoised:
-    test_data_file = test_data_path + "/" + \
-                     "accelerated_acc" + str(acceleration) + "_rsos.hdf5"
+    if args.hdf5_file is not None:
+        test_data_file = args.hdf5_file
+    else:
+        test_data_file = test_data_path + "/" + \
+                         "accelerated_acc" + str(acceleration) + "_rsos.hdf5"
     if hvd.rank() == 0: print("\nReading the test dataset from: " + test_data_file, flush=True)
 
     test_dataset = DatasetFromHdf5(hvd=hvd, file_path=test_data_file, \
@@ -205,11 +212,19 @@ with tqdm(total=len(test_loader),
 # ------------------------------------- Results ------------------------------------------#
 
 if not args.is_cnn_denoised:
-    if hvd.rank() == 0: print("Saving outputs to: " + output_path + "/preds_rsos.npy")
-    np.save(output_path + "/preds_rsos.npy", preds)
+    if args.preds_tag is not None:
+        pred_fname = "preds_" + args.preds_tag + ".npy"
+    else:
+        pred_fname = "preds_rsos.npy"
+    if hvd.rank() == 0: print("Saving outputs to: " + output_path + "/" + pred_fname)
+    np.save(output_path + "/" + pred_fname, preds)
 else:
-    if hvd.rank() == 0: print("Saving outputs to: " + output_path + "/preds_" + cnn_model_name + ".npy")
-    np.save(output_path + "/preds_" + cnn_model_name + ".npy", preds)
+    if args.preds_tag is not None:
+        pred_fname = "preds_" + args.preds_tag + ".npy"
+    else:
+        pred_fname = "preds_" + cnn_model_name + ".npy"
+    if hvd.rank() == 0: print("Saving outputs to: " + output_path + "/" + pred_fname)
+    np.save(output_path + "/" + pred_fname, preds)
 
 auc = roc_auc_score(np.concatenate((np.ones(test_half_size), np.zeros(test_half_size)), axis=0), preds)
 if hvd.rank() == 0: print("Acceleration factor: " + str(acceleration) + " AUC: " + str(auc))

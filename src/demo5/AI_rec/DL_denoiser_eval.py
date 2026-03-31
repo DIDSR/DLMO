@@ -89,13 +89,14 @@ dim1, dim2      = 260, 311
 pad             = (4, 5, 6, 6) # zero-padding for unet training
 cmpr_dtype      = 'float32'
 
-# -----------------------------------------------------------
-# importing architectures:
-# -----------------------------------------------------------
 if cmpr_dtype == 'float16':
     torch_dtype = torch.float16
 else:
     torch_dtype = torch.float32
+
+# -----------------------------------------------------------
+# importing architectures:
+# -----------------------------------------------------------
 if args.model_name == 'cnn3':
     from models import CNN3
     model = CNN3(num_channels=num_channels)

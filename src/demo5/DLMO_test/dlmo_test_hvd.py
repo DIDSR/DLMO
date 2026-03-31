@@ -77,37 +77,41 @@ if task_type not in ['detection', 'rayleigh']:
 
 acceleration = args.acceleration  # acceleration factor
 if acceleration not in [1, 2, 4, 6, 8]:
-    print('Invalid acceleration factor.', flush=True)
-    sys.exit()
+    print('Warning! For acceleration factors other than 4, 8 train your \
+        DL postprocessor accordingly and save the checkpoints in the \
+        trained_model folder.')
 
-num_channels = args.num_channels
-
-batch_size = args.batch_size
-batches_per_allreduce = args.batches_per_allreduce
-allreduce_batch_size = batch_size * batches_per_allreduce
-
-test_data_path = args.test_path
-cnn_model_name = args.test_cnn_denoiser
-
-output_path = "./dlmo_predictions/acc" + str(acceleration) + "/"
+# ----------------------------CMD Line Inputs-----------------------------------------------------#
+num_channels           = args.num_channels
+batch_size             = args.batch_size
+batches_per_allreduce  = args.batches_per_allreduce
+allreduce_batch_size   = batch_size * batches_per_allreduce
+test_data_path         = args.test_path
+cnn_model_name         = args.test_cnn_denoiser
+output_path            = "./dlmo_predictions/acc" + str(acceleration) + "/"
 if not os.path.isdir(output_path): os.makedirs(output_path, exist_ok=True)
 
-dim1, dim2 = 260, 311
-cmpr_dtype = 'float32'
-
+# input dimension and dtype info ----------------------------------------
+dim1, dim2     = 260, 311
+cmpr_dtype     = 'float32'
 test_half_size = 3
-test_tot_size = 2 * test_half_size
+test_tot_size  = 2 * test_half_size
 
 if cmpr_dtype == 'float16':
     torch_dtype = torch.float16
 else:
     torch_dtype = torch.float32
 
+# Restore from a trained model.
+# Horovod: restore on the first worker which will broadcast weights to other workers.
+# retrieving the checkpoint path -----------------------------------------------------------------------------
+pretrained_model_checkpoint_format = args.pretrained_model_checkpoint_format.format(epoch=args.pretrained_model_epoch)
+pretrained_model_path              = os.path.join(args.pretrained_model_path, pretrained_model_checkpoint_format)
 hvd.init()
 
 # ------------------------------------- CUDA for PyTorch ------------------------------------------#
 use_cuda = torch.cuda.is_available()
-device = torch.device("cuda" if use_cuda else "cpu")
+device   = torch.device("cuda" if use_cuda else "cpu")
 
 if use_cuda:
     # https://pytorch.org/docs/stable/notes/numerical_accuracy.html
@@ -124,6 +128,7 @@ if hvd.rank() == 0:
   print('----------------------------------------')
   print("\nNo. of gpus used:", hvd.size())
   for i in args.__dict__: print((i), ':', args.__dict__[i])
+  print('pretrained model full path:', pretrained_model_path)
   print('\n----------------------------------------\n')
 
 # Horovod: print logs on the first worker
@@ -140,16 +145,10 @@ model = Net(dim1=dim1, dim2=dim2)
 if use_cuda:
     model = model.cuda()
 
-# Restore from a trained model.
-# Horovod: restore on the first worker which will broadcast weights to other workers.
-pretrained_model_path = args.pretrained_model_path
-pretrained_model_epoch = args.pretrained_model_epoch
-pretrained_model_checkpoint_format = args.pretrained_model_checkpoint_format.format(epoch=pretrained_model_epoch)
-pretrained_model = os.path.join(pretrained_model_path, pretrained_model_checkpoint_format)
 if hvd.rank() == 0:
-    checkpoint = torch.load(pretrained_model)
+    checkpoint = torch.load(pretrained_model_path)
     model.load_state_dict(checkpoint['model'])
-    print("Loaded trained network from:", pretrained_model, flush=True)
+    print("Loaded trained network from:", pretrained_model_path, flush=True)
 
 # Horovod: broadcast parameters & optimizer state.
 hvd.broadcast_parameters(model.state_dict(), root_rank=0)
@@ -193,7 +192,7 @@ if hvd.rank() == 0:
 # ==================================================================
 # test the model
 # ==================================================================
-if hvd.rank() == 0: print("Evaluating on the Rayleigh task .... ")
+if hvd.rank() == 0: print("Evaluating DLMO on the Rayleigh task .... ")
 
 preds = np.empty(0)
 with tqdm(total=len(test_loader),
@@ -201,9 +200,7 @@ with tqdm(total=len(test_loader),
     for batch_idx, data in enumerate(test_loader):
 
         if use_cuda: data = data.cuda()
-
         model.eval()
-
         output = model(data)
         preds = np.append(preds, np.squeeze(output.cpu().detach().numpy()), axis=0)
 

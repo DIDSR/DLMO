@@ -58,9 +58,9 @@ Example:
 ```
 ACC=4
 
-TEST_PATH=../image_acquisition_and_reconstruction/examples/img_w_signal/
-TRAINED_MODEL_PATH=./trained_model/mri_cnn_io_acc_${ACC}_hvd/hvd_cpts/
-#TRAINED_MODEL_PATH=./trained_model/mri_cnn_io_acc_${ACC}_unet_hvd/hvd_cpts/
+TEST_PATH=../../demo3/rsos_rec
+TRAINED_MODEL_PATH=./trained_model/mri_cnn_dlmo_acc_${ACC}_hvd/ # for rsos recon
+#TRAINED_MODEL_PATH=./trained_model/mri_cnn_dlmo_acc_${ACC}_unet_hvd/ #for unet recon
 
 # Transfer-learned models
 EPOCH=50
@@ -71,7 +71,7 @@ EPOCH=50
 python dlmo_test_hvd.py --task rayleigh \
 --test-path $TEST_PATH \
 --acceleration ${ACC} \
---batch-size 6 \
+--batch-size 10 \
 --batches-per-allreduce 1 \
 --fp16-allreduce \
 --pretrained-model-path $TRAINED_MODEL_PATH \

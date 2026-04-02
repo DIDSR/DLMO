@@ -23,7 +23,7 @@ import torch.optim as optim
 import torch.utils.data.distributed
 import horovod.torch as hvd
 import torch.nn.functional as F
-from models import Net_7conv2_dropout as Net
+from models import Net_7conv2_dropout as DLMO_Net
 from sklearn.metrics import roc_auc_score
 
 import os
@@ -35,7 +35,7 @@ import scipy.io
 import utils
 from tqdm import tqdm
 
-# from torchsummary import summary
+from torchsummary import summary
 
 import time
 
@@ -43,16 +43,13 @@ start_time = time.time()
 # --------------------------------------Some basic settings ---------------------------------------#
 parser = argparse.ArgumentParser(description='Estimate the probability of signal existing using a trained CNN IO.')
 parser.add_argument('--task', default='rayleigh', help='Task type (detection/rayleigh).')
-parser.add_argument('--test-path', \
-                    help='Path to images for test.')
-parser.add_argument('--hdf5-file', default=None, \
-                    help='Optional direct HDF5 file path (overrides --test-path naming).')
+parser.add_argument('--test-path', help='Path to reconstructed MR images with signals.')
 parser.add_argument('--is-cnn-denoised', \
                     action='store_true', default=False,
                     help='Whether the input images are cnn-denoised.')
-parser.add_argument('--test-cnn-denoiser', \
-                    help='Name of cnn denoiser that denoised images.')
-parser.add_argument('--acceleration', type=int, default=2, \
+parser.add_argument('--cnn-denoiser-name', \
+                    help='Name of cnn denoiser that denoised the MR images.')
+parser.add_argument('--acceleration', type=int, default=4, \
                     help='Acceleration factor in range of 2 to 12.')
 parser.add_argument('--num-channels', type=int, default=1, help='3 for rgb images and 1 for gray scale images')
 parser.add_argument('--batch-size', help='Batch size.', type=int)
@@ -67,7 +64,8 @@ parser.add_argument('--pretrained-model-checkpoint-format', default='checkpoint-
 parser.add_argument('--pretrained-model-epoch', type=int, default=150, help='Transfered learning based on a previous trained model (provide epoch).')
 parser.add_argument('--preds-tag', default=None, \
                     help='Optional tag for prediction filename (saved as preds_<tag>.npy).')
-
+#arser.add_argument('--hdf5-file', default=None, \
+#                    help='Optional direct HDF5 file path (overrides --test-path naming).')
 args = parser.parse_args()
 
 task_type = args.task  # task type (detection/rayleigh)
@@ -76,7 +74,7 @@ if task_type not in ['detection', 'rayleigh']:
     sys.exit()
 
 acceleration = args.acceleration  # acceleration factor
-if acceleration not in [1, 2, 4, 6, 8]:
+if acceleration not in [1, 4, 8]:
     print('Warning! For acceleration factors other than 4, 8 train your \
         DL postprocessor accordingly and save the checkpoints in the \
         trained_model folder.')
@@ -86,16 +84,19 @@ num_channels           = args.num_channels
 batch_size             = args.batch_size
 batches_per_allreduce  = args.batches_per_allreduce
 allreduce_batch_size   = batch_size * batches_per_allreduce
-test_data_path         = args.test_path
-cnn_model_name         = args.test_cnn_denoiser
-output_path            = "./dlmo_predictions/acc" + str(acceleration) + "/"
+test_data_in_path      = args.test_path
+output_path            = "./dlmo_discrimination/acc" + str(acceleration) + "/"
 if not os.path.isdir(output_path): os.makedirs(output_path, exist_ok=True)
 
+#input file path with MR reconstruction ---------------------------------------------------------#
+if args.cnn_denoiser_name is None:
+    test_data_in_file     = test_data_in_path + "/test_acc" + str(acceleration) + "_rsos.hdf5"   # rsos recon
+else:
+    test_data_in_file     = (test_data_in_path + "/test_acc" + str(acceleration) + "_" +         
+                            args.cnn_denoiser_name +".hdf5")                                      # unet recon
 # input dimension and dtype info ----------------------------------------
 dim1, dim2     = 260, 311
 cmpr_dtype     = 'float32'
-test_half_size = 3
-test_tot_size  = 2 * test_half_size
 
 if cmpr_dtype == 'float16':
     torch_dtype = torch.float16
@@ -129,6 +130,7 @@ if hvd.rank() == 0:
   print("\nNo. of gpus used:", hvd.size())
   for i in args.__dict__: print((i), ':', args.__dict__[i])
   print('pretrained model full path:', pretrained_model_path)
+  print("testing data full path    : ", test_data_in_file)
   print('\n----------------------------------------\n')
 
 # Horovod: print logs on the first worker
@@ -139,11 +141,10 @@ verbose = 0 if hvd.rank() == 0 else 0
 # ==================================================================
 if hvd.rank() == 0: print("Load model .... \n")
 
-model = Net(dim1=dim1, dim2=dim2)
+model = DLMO_Net(dim1=dim1, dim2=dim2)
 
 # transfer models to cuda
-if use_cuda:
-    model = model.cuda()
+if use_cuda: model = model.cuda()
 
 if hvd.rank() == 0:
     checkpoint = torch.load(pretrained_model_path)
@@ -157,13 +158,13 @@ hvd.broadcast_parameters(model.state_dict(), root_rank=0)
 # load test data
 # ==================================================================
 kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
-
+'''
 if not args.is_cnn_denoised:
     if args.hdf5_file is not None:
         test_data_file = args.hdf5_file
     else:
         test_data_file = test_data_path + "/" + \
-                         "accelerated_acc" + str(acceleration) + "_rsos.hdf5"
+                         "test_acc" + str(acceleration) + "_rsos.hdf5"
     if hvd.rank() == 0: print("\nReading the test dataset from: " + test_data_file, flush=True)
 
     test_dataset = DatasetFromHdf5(hvd=hvd, file_path=test_data_file, \
@@ -178,16 +179,22 @@ else:
     test_dataset = DatasetFromNpz(test_data_file)
     test_dataset = test_dataset.data
     test_dataset = np.reshape(test_dataset, (test_dataset.shape[0], 1, dim1, dim2)).astype('float32')
-
+'''
+test_dataset = DatasetFromHdf5(hvd=hvd, file_path=test_data_in_file, \
+                              mod_num=hvd.size() * batch_size)
 test_sampler = torch.utils.data.distributed.DistributedSampler(
     test_dataset, num_replicas=hvd.size(), rank=hvd.rank(), shuffle=False)
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,
                                          sampler=test_sampler, **kwargs)
 
 if hvd.rank() == 0:
-    print('%d images are used to test CNN IO\n' % (len(test_dataset)), flush=True)  #
-    print('min and max in test data: [%.4f, %.4f]' % (np.min(test_dataset), np.max(test_dataset)), flush=True)
-    print('Shape of the loaded test data is:', test_dataset.shape, 'and its dtype is:', test_dataset.dtype, flush=True)
+    print('Trained DLMO is applied to %d MR images\n' % (len(test_dataset.data)), flush=True)  #
+    print('Data range [min, max] in this set: [%.4f, %.4f]' % (np.min(test_dataset.data), np.max(test_dataset.data)), flush=True)
+    print('Shape of the loaded test data is:', test_dataset.data.shape, 'and its dtype is:', test_dataset.data.dtype, flush=True)
+    print('Below is the DLMO architecture')
+    summary(model, (1, dim1, dim2))
+    test_tot_size   = test_dataset.data.shape[0]
+    test_half_size  = int(test_tot_size/2)
 
 # ==================================================================
 # test the model
@@ -197,31 +204,31 @@ if hvd.rank() == 0: print("Evaluating DLMO on the Rayleigh task .... ")
 preds = np.empty(0)
 with tqdm(total=len(test_loader),
         disable=not verbose) as t:
-    for batch_idx, data in enumerate(test_loader):
-
+    for batch_idx, (data, target) in enumerate(test_loader):
         if use_cuda: data = data.cuda()
         model.eval()
         output = model(data)
-        preds = np.append(preds, np.squeeze(output.cpu().detach().numpy()), axis=0)
-
+        preds  = np.append(preds, np.squeeze(output.cpu().detach().numpy()), axis=0)
         t.update(1)
 
+print(preds)
+#sys.exit()
 # ------------------------------------- Results ------------------------------------------#
-
-if not args.is_cnn_denoised:
-    if args.preds_tag is not None:
-        pred_fname = "preds_" + args.preds_tag + ".npy"
+if hvd.rank() == 0:
+    if args.cnn_denoiser_name is None:
+        if args.preds_tag is not None:
+            pred_fname = "preds_" + args.preds_tag + ".npy"
+        else:
+            pred_fname = "preds_rsos.npy"
+        if hvd.rank() == 0: print("Saving outputs to: " + output_path + "/" + pred_fname)
+        #np.save(output_path + "/" + pred_fname, preds)
     else:
-        pred_fname = "preds_rsos.npy"
-    if hvd.rank() == 0: print("Saving outputs to: " + output_path + "/" + pred_fname)
-    np.save(output_path + "/" + pred_fname, preds)
-else:
-    if args.preds_tag is not None:
-        pred_fname = "preds_" + args.preds_tag + ".npy"
-    else:
-        pred_fname = "preds_" + cnn_model_name + ".npy"
-    if hvd.rank() == 0: print("Saving outputs to: " + output_path + "/" + pred_fname)
-    np.save(output_path + "/" + pred_fname, preds)
+        if args.preds_tag is not None:
+            pred_fname = "preds_" + args.preds_tag + ".npy"
+        else:
+            pred_fname = "preds_" + args.cnn_denoiser_name + ".npy"
+        print("Saving outputs to: " + output_path + "/" + pred_fname)
+        #np.save(output_path + "/" + pred_fname, preds)
 
-auc = roc_auc_score(np.concatenate((np.ones(test_half_size), np.zeros(test_half_size)), axis=0), preds)
-if hvd.rank() == 0: print("Acceleration factor: " + str(acceleration) + " AUC: " + str(auc))
+    auc = roc_auc_score(np.concatenate((np.ones(test_half_size), np.zeros(test_half_size)), axis=0), preds)
+    print("Acceleration factor: " + str(acceleration) + " AUC: " + str(auc))

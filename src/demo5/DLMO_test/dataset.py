@@ -103,7 +103,7 @@ class DatasetFromHdf5(Dataset):
         else:
             if hvd.rank() == 0:
                     print('\n----------------------------------------------------------------------------')
-                    print("ERROR! Issues related to training/tuning path. Re-check training-fname option.")
+                    print("ERROR! No h5 files found. Re-check input data paths.")
                     print('------------------------------------------------------------------------------')
                     sys.exit()
         if np.mod(self.data.shape[0], mod_num) != 0:

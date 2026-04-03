@@ -56,8 +56,6 @@ parser.add_argument('--batch-size', help='Batch size.', type=int)
 parser.add_argument('--batches-per-allreduce', type=int, default=1,
                     help='number of batches processed locally before executing allreduce across workers;'
                     'It multiplies the total batch size. (RHR: 1 loss function eqs 1 batches-per-allreduce')
-parser.add_argument('--fp16-allreduce', action='store_true', default=False,
-                    help='use fp16 compression during allreduce')
 parser.add_argument('--pretrained-model-path', help='The previous trained model (provide path).')
 parser.add_argument('--pretrained-model-checkpoint-format', default='checkpoint-{epoch}.pth.tar',
                     help='checkpoint file format')
@@ -211,8 +209,6 @@ with tqdm(total=len(test_loader),
         preds  = np.append(preds, np.squeeze(output.cpu().detach().numpy()), axis=0)
         t.update(1)
 
-print(preds)
-#sys.exit()
 # ------------------------------------- Results ------------------------------------------#
 if hvd.rank() == 0:
     if args.cnn_denoiser_name is None:
@@ -221,14 +217,14 @@ if hvd.rank() == 0:
         else:
             pred_fname = "preds_rsos.npy"
         if hvd.rank() == 0: print("Saving outputs to: " + output_path + "/" + pred_fname)
-        #np.save(output_path + "/" + pred_fname, preds)
+        np.save(output_path + "/" + pred_fname, preds)
     else:
         if args.preds_tag is not None:
             pred_fname = "preds_" + args.preds_tag + ".npy"
         else:
             pred_fname = "preds_" + args.cnn_denoiser_name + ".npy"
         print("Saving outputs to: " + output_path + "/" + pred_fname)
-        #np.save(output_path + "/" + pred_fname, preds)
+        np.save(output_path + "/" + pred_fname, preds)
 
     auc = roc_auc_score(np.concatenate((np.ones(test_half_size), np.zeros(test_half_size)), axis=0), preds)
     print("Acceleration factor: " + str(acceleration) + " AUC: " + str(auc))

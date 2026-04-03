@@ -44,26 +44,18 @@ start_time = time.time()
 parser = argparse.ArgumentParser(description='Estimate the probability of signal existing using a trained CNN IO.')
 parser.add_argument('--task', default='rayleigh', help='Task type (detection/rayleigh).')
 parser.add_argument('--test-path', help='Path to reconstructed MR images with signals.')
-parser.add_argument('--is-cnn-denoised', \
-                    action='store_true', default=False,
-                    help='Whether the input images are cnn-denoised.')
 parser.add_argument('--cnn-denoiser-name', \
                     help='Name of cnn denoiser that denoised the MR images.')
 parser.add_argument('--acceleration', type=int, default=4, \
                     help='Acceleration factor in range of 2 to 12.')
 parser.add_argument('--num-channels', type=int, default=1, help='3 for rgb images and 1 for gray scale images')
 parser.add_argument('--batch-size', help='Batch size.', type=int)
-parser.add_argument('--batches-per-allreduce', type=int, default=1,
-                    help='number of batches processed locally before executing allreduce across workers;'
-                    'It multiplies the total batch size. (RHR: 1 loss function eqs 1 batches-per-allreduce')
 parser.add_argument('--pretrained-model-path', help='The previous trained model (provide path).')
 parser.add_argument('--pretrained-model-checkpoint-format', default='checkpoint-{epoch}.pth.tar',
                     help='checkpoint file format')
 parser.add_argument('--pretrained-model-epoch', type=int, default=150, help='Transfered learning based on a previous trained model (provide epoch).')
 parser.add_argument('--preds-tag', default=None, \
                     help='Optional tag for prediction filename (saved as preds_<tag>.npy).')
-#arser.add_argument('--hdf5-file', default=None, \
-#                    help='Optional direct HDF5 file path (overrides --test-path naming).')
 args = parser.parse_args()
 
 task_type = args.task  # task type (detection/rayleigh)
@@ -80,18 +72,19 @@ if acceleration not in [1, 4, 8]:
 # ----------------------------CMD Line Inputs-----------------------------------------------------#
 num_channels           = args.num_channels
 batch_size             = args.batch_size
-batches_per_allreduce  = args.batches_per_allreduce
-allreduce_batch_size   = batch_size * batches_per_allreduce
 test_data_in_path      = args.test_path
-output_path            = "./dlmo_discrimination/acc" + str(acceleration) + "/"
+output_path            = "./dlmo_discrimination/acc" + str(acceleration)
 if not os.path.isdir(output_path): os.makedirs(output_path, exist_ok=True)
 
 #input file path with MR reconstruction ---------------------------------------------------------#
 if args.cnn_denoiser_name is None:
-    test_data_in_file     = test_data_in_path + "/test_acc" + str(acceleration) + "_rsos.hdf5"   # rsos recon
+    if acceleration == 1:
+         test_data_in_file    = test_data_in_path + "/test_acc4_at_acc" + str(acceleration) + "_rsos.hdf5"   # rsos (1x) recon
+    else:
+        test_data_in_file     = test_data_in_path + "/test_acc" + str(acceleration) + "_rsos.hdf5"           # rsos (4x) recon
 else:
-    test_data_in_file     = (test_data_in_path + "/test_acc" + str(acceleration) + "_" +         
-                            args.cnn_denoiser_name +".hdf5")                                      # unet recon
+    test_data_in_file         = (test_data_in_path + "/test_acc" + str(acceleration) + "_" +         
+                                args.cnn_denoiser_name +".hdf5")                                      # unet recon
 # input dimension and dtype info ----------------------------------------
 dim1, dim2     = 260, 311
 cmpr_dtype     = 'float32'
@@ -101,8 +94,6 @@ if cmpr_dtype == 'float16':
 else:
     torch_dtype = torch.float32
 
-# Restore from a trained model.
-# Horovod: restore on the first worker which will broadcast weights to other workers.
 # retrieving the checkpoint path -----------------------------------------------------------------------------
 pretrained_model_checkpoint_format = args.pretrained_model_checkpoint_format.format(epoch=args.pretrained_model_epoch)
 pretrained_model_path              = os.path.join(args.pretrained_model_path, pretrained_model_checkpoint_format)

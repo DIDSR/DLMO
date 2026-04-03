@@ -189,7 +189,6 @@ if hvd.rank() == 0:
     summary(model, (args.num_channels, dim1+12, dim2+9))
     test_tot_size   = test_dataset.data.shape[0]
     test_half_size  = int(test_tot_size/2)
-
 # ==================================================================
 # test the model
 # ==================================================================

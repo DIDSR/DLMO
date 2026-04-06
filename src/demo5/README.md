@@ -28,27 +28,35 @@ This demo uploads pretrained weights and DDPM-generated objects(SOMs) uploaded i
 
 4. [*DLMO testing*](https://github.com/DIDSR/DLMO/tree/main/src/demo5/DLMO_test)
 
-   Apply model observers to the three HDF5 files from Steps 1-3 and compute PC (AUC) by signal length (4-8 mm) to generate a summarized plot:
+   Apply model observers to the three HDF5 files from Steps 1-3 for the three different reconstruction.
+   
+   ### DLMO on accelearated rSOS(4x) reconstruction 
    ```
    cd ../DLMO_test
-   # DLMO on accelearated rSOS(4x) reconstruction 
    python dlmo_test_hvd.py --task rayleigh --test-path ../../demo3/rsos_rec --acceleration 4 \
    --batch-size 10 --pretrained-model-path trained_model/mri_cnn_dlmo_acc_4_hvd --pretrained-model-epoch 50
+   ```
 
-   # DLMO on accelearated UNet(4x) reconstruction 
+   ### DLMO on accelearated UNet(4x) reconstruction
+   ``` 
    python dlmo_test_hvd.py --task rayleigh --test-path ../AI_rec/ai_rec --cnn-denoiser-name unet \
    --acceleration 4 --batch-size 10 --pretrained-model-path trained_model/mri_cnn_dlmo_acc_4_unet_hvd \
    --pretrained-model-epoch 50
-   
-   # DLMO on fully sampled rSOS(1x) reconstruction 
-   python dlmo_test_hvd.py --task rayleigh --test-path ../../demo3/rsos_rec --acceleration 1 \
-   --batch-size 10 --pretrained-model-path trained_model/mri_cnn_dlmo_acc_1_hvd --pretrained-model-epoch 170
-```
-   python step4_eval.py
    ```
 
-   This script runs `dlmo_test_hvd.py` three times (once for each HDF5 file) and saves:
-   - Figure: `./dlmo_predictions/step4.png`
-   - CSV: `./dlmo_predictions/step4.csv`
+   ### DLMO on fully sampled rSOS(1x) reconstruction 
+   ```
+   python dlmo_test_hvd.py --task rayleigh --test-path ../../demo3/rsos_rec --acceleration 1 \
+   --batch-size 10 --pretrained-model-path trained_model/mri_cnn_dlmo_acc_1_hvd --pretrained-model-epoch 170
+   ```
 
-   Demo 4 contains the separate DLMO training workflow if you need to retrain or refine the observer models.
+   Process the DLMO discrimination-based outputs from the above obtianed three methods and compute PC (AUC) by signal length (4-8 mm) to generate a summarized plot as shown in figure 4 in our DLMO paper:
+   
+   ```
+   python --dlmo-eval-on-ref './dlmo_discrimination/acc1/preds_rsos.npy' \
+   --dlmo-eval-on-acc-rsos './dlmo_discrimination/acc4/preds_rsos.npy' \
+   --dlmo-eval-on-acc-ai-rec './dlmo_discrimination/acc4/preds_unet.npy' \
+   --l-list-file '../../demo3/rsos_rec/test_acc4_at_acc1_rsos.hdf5' \
+   --recon-method-str 'rSOS_1x,rSOS_4x,U-Net_4x' \
+   --signal-length-arr 4 5 6 7 8
+   ```

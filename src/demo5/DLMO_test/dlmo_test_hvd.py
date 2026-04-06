@@ -84,8 +84,8 @@ if args.cnn_denoiser_name is None:
         test_data_in_file     = test_data_in_path + "/test_acc" + str(acceleration) + "_rsos.hdf5"           # rsos (4x) recon
 else:
     test_data_in_file         = (test_data_in_path + "/test_acc" + str(acceleration) + "_" +         
-                                args.cnn_denoiser_name +".hdf5")                                      # unet recon
-# input dimension and dtype info ----------------------------------------
+                                args.cnn_denoiser_name +".hdf5")                                              # unet recon
+# input dimension and dtype info --------
 dim1, dim2     = 260, 311
 cmpr_dtype     = 'float32'
 
@@ -94,12 +94,12 @@ if cmpr_dtype == 'float16':
 else:
     torch_dtype = torch.float32
 
-# retrieving the checkpoint path -----------------------------------------------------------------------------
+# retrieving the checkpoint path -------------------------------------------------------------------------------------
 pretrained_model_checkpoint_format = args.pretrained_model_checkpoint_format.format(epoch=args.pretrained_model_epoch)
 pretrained_model_path              = os.path.join(args.pretrained_model_path, pretrained_model_checkpoint_format)
 hvd.init()
 
-# ------------------------------------- CUDA for PyTorch ------------------------------------------#
+# --------------------- CUDA for PyTorch --------------------------------#
 use_cuda = torch.cuda.is_available()
 device   = torch.device("cuda" if use_cuda else "cpu")
 
@@ -147,28 +147,6 @@ hvd.broadcast_parameters(model.state_dict(), root_rank=0)
 # load test data
 # ==================================================================
 kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
-'''
-if not args.is_cnn_denoised:
-    if args.hdf5_file is not None:
-        test_data_file = args.hdf5_file
-    else:
-        test_data_file = test_data_path + "/" + \
-                         "test_acc" + str(acceleration) + "_rsos.hdf5"
-    if hvd.rank() == 0: print("\nReading the test dataset from: " + test_data_file, flush=True)
-
-    test_dataset = DatasetFromHdf5(hvd=hvd, file_path=test_data_file, \
-                                   mod_num=hvd.size() * batch_size)
-    test_dataset = test_dataset.data
-else:
-    test_data_file = test_data_path + "/" + \
-                     cnn_model_name + "_" + task_type + "_acc_" + str(acceleration) + "/" + \
-                     "preds.npy"
-    if hvd.rank() == 0: print("\nReading the test dataset from: " + test_data_file, flush=True)
-
-    test_dataset = DatasetFromNpz(test_data_file)
-    test_dataset = test_dataset.data
-    test_dataset = np.reshape(test_dataset, (test_dataset.shape[0], 1, dim1, dim2)).astype('float32')
-'''
 test_dataset = DatasetFromHdf5(hvd=hvd, file_path=test_data_in_file, \
                               mod_num=hvd.size() * batch_size)
 test_sampler = torch.utils.data.distributed.DistributedSampler(
@@ -177,7 +155,7 @@ test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,
                                          sampler=test_sampler, **kwargs)
 
 if hvd.rank() == 0:
-    print('Trained DLMO is applied to %d MR images\n' % (len(test_dataset.data)), flush=True)  #
+    print('Trained DLMO is applied to %d MR images\n' % (len(test_dataset.data)), flush=True)  
     print('Data range [min, max] in this set: [%.4f, %.4f]' % (np.min(test_dataset.data), np.max(test_dataset.data)), flush=True)
     print('Shape of the loaded test data is:', test_dataset.data.shape, 'and its dtype is:', test_dataset.data.dtype, flush=True)
     print('Below is the DLMO architecture')
@@ -217,5 +195,6 @@ if hvd.rank() == 0:
         print("Saving outputs to: " + output_path + "/" + pred_fname)
         np.save(output_path + "/" + pred_fname, preds)
 
-    auc = roc_auc_score(np.concatenate((np.ones(test_half_size), np.zeros(test_half_size)), axis=0), preds)
+    # pred array stores H_d pred and then H_s pred --------------------------------------------------------
+    auc = roc_auc_score(np.concatenate((np.zeros(test_half_size), np.ones(test_half_size)), axis=0), preds)
     print("Acceleration factor: " + str(acceleration) + " AUC: " + str(auc))

@@ -81,23 +81,24 @@ class DatasetFromHdf5(Dataset):
                 hf = h5py.File(file_path, mode='r')
                 # Support both (H_0, H_1) and (H_s, H_d) key formats
                 if "H_0" in hf and "H_1" in hf:
-                    H0 = hf.get("H_0")
-                    H1 = hf.get("H_1")
+                    H_s = hf.get("H_0")
+                    H_d = hf.get("H_1")
                 elif "H_s" in hf and "H_d" in hf:
-                    H0 = hf.get("H_s")
-                    H1 = hf.get("H_d")
+                    H_s = hf.get("H_s")
+                    H_d = hf.get("H_d")
                 else:
                     if hvd.rank() == 0:
                         print('\n-------------------------------------------------------------')
                         print("ERROR! HDF5 must have (H_0, H_1) or (H_s, H_d) keys.")
                         print('--------------------------------------------------------------')
                     sys.exit()
-                self.data = np.append(H0, H1, axis=0)
-                self.target = np.concatenate((np.ones([H0.shape[0], 1], dtype=H0.dtype), np.zeros([H1.shape[0], 1], dtype=H1.dtype)), axis=0)
+                self.data = np.append(H_d, H_s, axis=0)
+                # assigning target values for dublet as 0 and singlet as 1 -----------------------------------------------------
+                self.target = np.concatenate((np.zeros([H_d.shape[0], 1], dtype=H_d.dtype), np.ones([H_s.shape[0], 1], dtype=H_s.dtype)), axis=0)
             else:
                 if hvd.rank() == 0:
                     print('\n-------------------------------------------------------------')
-                    print("ERROR! No training/tuning h5 files. Re-check input data paths.")
+                    print("ERROR! No h5 files found. Re-check input data paths.")
                     print('--------------------------------------------------------------')
                     sys.exit()
         else:

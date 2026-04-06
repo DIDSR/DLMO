@@ -50,7 +50,7 @@ This demo uploads pretrained weights and DDPM-generated objects(SOMs) uploaded i
    --batch-size 10 --pretrained-model-path trained_model/mri_cnn_dlmo_acc_1_hvd --pretrained-model-epoch 170
    ```
 
-   #### Process the DLMO discrimination-based outputs from the above obtianed three methods and compute PC (AUC) by signal length (4-8 mm) to generate a summarized plot as shown in figure 4 in our DLMO paper:
+   #### Process the DLMO discrimination-based outputs from the above obtianed three methods and compute PC (AUC) by signal length (4-8 mm) to generate a summarized plot as shown in figure 4 in our [DLMO paper](https://arxiv.org/abs/2602.22535):
    
    ```
    python step4_eval.py --dlmo-eval-on-ref './dlmo_discrimination/acc1/preds_rsos.npy' \
@@ -62,5 +62,5 @@ This demo uploads pretrained weights and DDPM-generated objects(SOMs) uploaded i
    ```
 
    <p align="left">
-	 <img src="../../docs/pics/PC_acc4.svg"  width="600">
+	 <img src="../../docs/pics/PC_acc4.svg"  width="450">
    </p>

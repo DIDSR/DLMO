@@ -30,7 +30,7 @@ import os
 import math
 import sys
 
-from dataset import DatasetFromHdf5, DatasetFromNpz
+from dataset import DatasetFromHdf5
 import scipy.io
 import utils
 from tqdm import tqdm
@@ -40,8 +40,8 @@ from torchsummary import summary
 import time
 
 start_time = time.time()
-# --------------------------------------Some basic settings ---------------------------------------#
-parser = argparse.ArgumentParser(description='Estimate the probability of signal existing using a trained CNN IO.')
+# --------------------------------------Some basic settings -----------------------------------------------------#
+parser = argparse.ArgumentParser(description='Applying a trained DLMO for detection/descrimination task')
 parser.add_argument('--task', default='rayleigh', help='Task type (detection/rayleigh).')
 parser.add_argument('--test-path', help='Path to reconstructed MR images with signals.')
 parser.add_argument('--cnn-denoiser-name', \
@@ -50,12 +50,12 @@ parser.add_argument('--acceleration', type=int, default=4, \
                     help='Acceleration factor in range of 2 to 12.')
 parser.add_argument('--num-channels', type=int, default=1, help='3 for rgb images and 1 for gray scale images')
 parser.add_argument('--batch-size', help='Batch size.', type=int)
-parser.add_argument('--pretrained-model-path', help='The previous trained model (provide path).')
+parser.add_argument('--pretrained-model-path', help='The previous trained path to DLMO weights.')
 parser.add_argument('--pretrained-model-checkpoint-format', default='checkpoint-{epoch}.pth.tar',
                     help='checkpoint file format')
-parser.add_argument('--pretrained-model-epoch', type=int, default=150, help='Transfered learning based on a previous trained model (provide epoch).')
-parser.add_argument('--preds-tag', default=None, \
-                    help='Optional tag for prediction filename (saved as preds_<tag>.npy).')
+parser.add_argument('--pretrained-model-epoch', type=int, default=150, help='Epoch number of the pretrained \
+                    DLMO checkpoint file.')
+parser.add_argument('--out-tag', default=None, help='Optional tag for the output filename (saved as preds_<out_tag>.npy).')
 args = parser.parse_args()
 
 task_type = args.task  # task type (detection/rayleigh)
@@ -181,15 +181,15 @@ with tqdm(total=len(test_loader),
 # ------------------------------------- Results ------------------------------------------#
 if hvd.rank() == 0:
     if args.cnn_denoiser_name is None:
-        if args.preds_tag is not None:
-            pred_fname = "preds_" + args.preds_tag + ".npy"
+        if args.out_tag is not None:
+            pred_fname = "preds_" + args.out_tag + ".npy"
         else:
             pred_fname = "preds_rsos.npy"
         if hvd.rank() == 0: print("Saving outputs to: " + output_path + "/" + pred_fname)
         np.save(output_path + "/" + pred_fname, preds)
     else:
-        if args.preds_tag is not None:
-            pred_fname = "preds_" + args.preds_tag + ".npy"
+        if args.out_tag is not None:
+            pred_fname = "preds_" + args.out_tag + ".npy"
         else:
             pred_fname = "preds_" + args.cnn_denoiser_name + ".npy"
         print("Saving outputs to: " + output_path + "/" + pred_fname)

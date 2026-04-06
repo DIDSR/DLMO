@@ -60,3 +60,7 @@ This demo uploads pretrained weights and DDPM-generated objects(SOMs) uploaded i
    --recon-method-str 'rSOS_1x,rSOS_4x,U-Net_4x' \
    --signal-length-arr 4 5 6 7 8
    ```
+
+   <p align="left">
+	 <img src="../../docs/pics/PC_acc4.svg"  width="600">
+   </p>

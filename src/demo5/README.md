@@ -1,4 +1,4 @@
-# A simple example of the DLMO framework
+# A simple example on the application of DLMO
 
 This demo uploads pretrained weights and DDPM-generated objects(SOMs) uploaded in this repository and walks through previous demos (demo2, demo3) to demostrate the application of DLMO observer model to get the descrimination-based output relative to different MR reconstruction methods (for a use case study of acceleration factor by 4). It contains four parts that should be run in order:
 

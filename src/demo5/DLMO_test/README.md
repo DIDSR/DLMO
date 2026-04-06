@@ -47,11 +47,11 @@ TEST_PATH=../../demo3/rsos_rec
 TRAINED_MODEL_PATH=./trained_model/mri_cnn_dlmo_acc_${ACC}_hvd/ # for rsos recon
 # TRAINED_MODEL_PATH=./trained_model/mri_cnn_dlmo_acc_${ACC}_unet_hvd/ #for unet recon
 
-# Transfer-learned models
-EPOCH=50
-
-# Base model
+# Base model for fully sampled DLMO learning from sratch
 # EPOCH=170
+
+# Transfer-learned are employed for DLMO learning for accelerated rSOS and unet
+EPOCH=50
 
 python dlmo_test_hvd.py --task rayleigh \
 --test-path $TEST_PATH \

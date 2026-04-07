@@ -1,7 +1,8 @@
-# source /projects01/mikem/applications/R-4.4.1/set_env.sh
+# source R-4.4.1/set_env.sh
 #
-# Since luna seems to be disconnected with the Internet and iMRMC has not been installed,
-# iMRMC was imported from the source code as follows.
+# downloading iMRMC cran is not recommended to run this script.
+# Rather import iMRMC source codes uploaded in this repository
+# as follows: 
 
 # Set the path to your folder
 folder_path <-
@@ -74,7 +75,7 @@ var_cr <-
   results$varDecomp$BCK$MLE$comp$DR * results$varDecomp$BCK$MLE$coeff$DR
 
 # ------------------------ Difference in AUCs and its CI -----------------------
-diff_AUC <- 0.88 - 0.93#results$MLEstat$AUCA
+diff_AUC <- 0.88 - 0.93 #results$MLEstat$AUCA
 se_diff <- (se_BDG ^ 2 + var_dlmo) ^ .5
 diff_AUC_low <- diff_AUC - 2.5 * se_diff
 diff_AUC_up <- diff_AUC + 2.5 * se_diff
@@ -94,8 +95,10 @@ cat(paste(
 
 
 # -------------------- selected design --------------------------------
-N_R <- 4
-N_C <- 160*4
+# change the number of reader and cases until you get an output of
+# a good design
+N_R <- 4     # no. of readers
+N_C <- 160*4 # no. of total cases
 
 #split plot
 c1sp <- 1 / N_C

@@ -41,11 +41,11 @@ The example codes below demonstrate how to run the DLMO. Before running the code
 
 5. [**A simple example of the DLMO framework**](https://github.com/DIDSR/DLMO/tree/main/src/demo5)
 
-    Run a compact workflow with bundled example objects: 1) image acquisition and reconstruction, 2) AI reconstruction, and 3) DLMO testing.
+    Run a compact workflow with bundled example for: 1) object generation,  2) image acquisition and reconstruction, 2) AI reconstruction, and 3) DLMO testing.
 
 6. [**Statistical analysis**](https://github.com/DIDSR/DLMO/tree/main/src/demo6)
 
-    Run the statistical analysis examples, including sample size determination via power analysis and pivotal-study similarity testing. Pre-installation of the iMRMC application is **NOT** recommended for the use of these scripts.
+    Run the MRMC[^refMRMC]-based statistical analysis to ensure DLMO operates at the same level as human experts. This part includes sample size estimation using a pilot study and pivotal-study similarity testing to demonstrate that DLMO and human performance are within a predefined margin of 0.1. It uses source code from the iMRMC package[^refiMRMC]. We have included relevant R files from the package; therefore, pre-installation of the iMRMC library is not recommended. 
 
 
 ## License and Copyright
@@ -66,6 +66,8 @@ If you use the DLMO data or code in your project, please cite its [arXiv paper](
 
 ## References
 [^refDDPM]: J. Ho, A. Jain, and P. Abbeel, “Denoising diffusion probabilistic models,” Advances in neural information processing systems, vol. 33, pp. 6840–6851, 2020.
+[^refMRMC]: N. A. Obuchowski, “Multireader receiver operating characteristic studies: a comparison of study designs,” Acad. Radiol., vol. 2, no. 8, pp.709–716, 1995.
+[^refiMRMC]:FDA/CDRH, “iMRMC: Software for the Statistical Analysis of multi-reader multi-case studies,” RST Catalog, 2022, https://doi.org/10.5281/ZENODO.6628838.
 <!--
 1. "HCP-Young Adult 2025,” https://www.humanconnectome.org/study/hcp-young-adult/document/hcp-young-adult-2025-release, 2025.
 2. K. Li, H. Li, K. J. Myers, and M. A. Anastasio, “Estimating task-based performance bounds for accelerated MRI image reconstruction methods by use of learned-ideal observers,” in Medical Imaging 2025: Image Perception, Observer Performance, and Technology Assessment, vol. 13409. SPIE, 2025, pp. 125–129.

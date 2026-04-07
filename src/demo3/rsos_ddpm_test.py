@@ -79,7 +79,7 @@ else:
 testing_data  = testing_data.astype(cmpr_dtype)
 print('Concatenating singlet and dublet files into shape:' , testing_data.shape, \
       '; and its dtype is:', testing_data.dtype, flush=True)
-print('Data range ([min, max]) in testing data: [%.4f, %.4f]' % (np.min(testing_data), \
+print('Data range ([min, max]) of SOMs in testing data: [%.4f, %.4f]' % (np.min(testing_data), \
                                                                  np.max(testing_data)))
 output_path = "./rsos_rec/"
 if not os.path.isdir(output_path): os.makedirs(output_path, exist_ok=True)
@@ -142,7 +142,7 @@ for acc in [acceleration]:
                                  'figsize': [10, 4]})
     # ------------------Save accelerated data to hdf5 files----------------------------------------#
     print('\nShape of the reconstructed testing data:', cur_testing_data.shape, '; and its dtype is:', cur_testing_data.dtype, flush=True)
-    print('Data range (min, max) of the reconstructed testing data with signal: [%.4f, %.4f]' % (np.min(cur_testing_data), np.max(cur_testing_data)))
+    print('Data range (min, max) of the reconstructed testing data at %dx with signal: [%.4f, %.4f]' % (acceleration, np.min(cur_testing_data), np.max(cur_testing_data)))
     print("Saving hdf5 files to: " + output_path + "test_acc" + str(acc) + "_rsos.hdf5 as dtype:" + cmpr_dtype)
     f = h5py.File(output_path + "test_acc" + str(acc) + "_rsos.hdf5", "w")
     f.create_dataset('H_d', data=cur_testing_data[:te_half_size,:,:,:], dtype=cmpr_dtype) #dublet
@@ -183,7 +183,7 @@ if acc > 1:
                                  'figsize': [10, 4]})
     # ----------------------Save reference data to hdf5 files-----------------------------------------#
     print('\nShape of the reconstructed testing data at 1x is:', cur_testing_data.shape, '; and its dtype is:', cur_testing_data.dtype, flush=True)
-    print('Data range (min, max) of the reconstructed testing data with signal: [%.4f, %.4f]' % (np.min(cur_testing_data), np.max(cur_testing_data)))
+    print('Data range (min, max) of the reconstructed testing data at 1x with signal: [%.4f, %.4f]' % (np.min(cur_testing_data), np.max(cur_testing_data)))
     print("Saving fully sampled reference hdf5 files to: " + output_path + "test_acc" + str(acc) + "_at_acc1_rsos.hdf5 as dtype:"+cmpr_dtype)
     f = h5py.File(output_path + "test_acc" + str(acc) + "_at_acc1_rsos.hdf5", "w")
     f.create_dataset('H_d', data=cur_testing_data[:te_half_size,:,:,:], dtype=cmpr_dtype) #dublet

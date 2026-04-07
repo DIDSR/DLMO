@@ -10,11 +10,11 @@ The demos are organized so that each stage has a clear role in the workflow:
 
 2. [Demo 2: Synthetic defect insertion](demo2/README.md)
 
-   Insert singlet and doublet defects into generated objects.
+   Insert singlet and doublet defects into the generated objects.
 
 3. [Demo 3: MR acquisition and reconstruction](demo3/README.md)
 
-   Simulate accelerated acquisition and produce rSOS reconstructions.
+   Simulate accelerated acquisition and perform rSOS reconstructions.
 
 4. [Demo 4: DLMO training](demo4/README.md)
 
@@ -26,6 +26,6 @@ The demos are organized so that each stage has a clear role in the workflow:
 
 6. [Demo 6: Statistical analysis](demo6/README.md)
 
-   Run the power-analysis and pivotal-study scripts used in the paper.
+   Run the sample size estimation and pivotal-study scripts used in the paper.
 
 Please refer to each demo README for prerequisites, inputs, outputs, and example commands.

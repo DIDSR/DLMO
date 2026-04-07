@@ -107,7 +107,8 @@ def main():
     plt.plot(lengths_to_eval, pc_ai_acc, '^-', color='red', linewidth=2, markersize=8, label=acc_ai_method_str)
 
     plt.xlabel('Signal length', fontsize=12)
-    plt.ylabel('PC (AUC)', fontsize=12)
+    plt.ylabel('AUC', fontsize=12)
+    plt.title('No. of testing images'+str(n), fontsize=12)
     plt.ylim(0.3, 1.05)
     plt.xlim(3.5, 8.5)
     plt.xticks(lengths_to_eval)

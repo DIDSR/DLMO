@@ -16,8 +16,8 @@ git lfs pull #in case you decide that you will fully download all the models in 
 ```
 Create the required environments as appropriate to your need:
 ```
-conda create --name ddpm --file requirements/ddpm.yml #to generate MR images using trained DDPM. DDPM training implemented using https://github.com/openai/improved-diffusion
-conda create --name dlmo --file requirements/dlmo.yml #to run the dlmo codes
+conda env create --name ddpm --file requirements/ddpm.yml #to generate MR images using trained DDPM. DDPM training implemented using https://github.com/openai/improved-diffusion
+conda env create --name dlmo --file requirements/dlmo.yml #to run the dlmo codes
 ```
 
 ## Usage

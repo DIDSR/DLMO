@@ -9,8 +9,6 @@ python DL_denoiser_eval.py [-h] [--test-path TEST_PATH] [--task TASK]
                            [--model_name MODEL_NAME]
                            [--num-channels NUM_CHANNELS]
                            [--batch-size BATCH_SIZE]
-                           [--batches-per-allreduce BATCHES_PER_ALLREDUCE]
-                           [--fp16-allreduce]
                            [--pretrained-model-path PRETRAINED_MODEL_PATH]
                            [--pretrained-model-checkpoint-format PRETRAINED_MODEL_CHECKPOINT_FORMAT]
                            [--pretrained-model-epoch PRETRAINED_MODEL_EPOCH]
@@ -27,7 +25,6 @@ Arguments:
   --batches-per-allreduce BATCHES_PER_ALLREDUCE   number of batches processed locally before executing
                                                   allreduce across workers;It multiplies the total batch
                                                   size. (RHR: 1 loss function eqs 1 batches-per-allreduce
-  --fp16-allreduce                                use fp16 compression during allreduce
   --pretrained-model-path PRETRAINED_MODEL_PATH   The previous trained model (provide path).
   --pretrained-model-checkpoint-format PRETRAINED_MODEL_CHECKPOINT_FORMAT
                                                   checkpoint file format

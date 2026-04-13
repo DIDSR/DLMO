@@ -7,7 +7,6 @@
 #     --num-channels: Number of channels (1 for grayscale, 3 for RGB). Default is 1.
 #     --batch-size: Batch size for testing.
 #     --batches-per-allreduce: Number of batches processed locally before allreduce. Default is 1.
-#     --fp16-allreduce: Use fp16 compression during allreduce (flag).
 #     --pretrained-model-path: Path to the directory containing the pre-trained model.
 #     --pretrained-model-checkpoint-format: Format of the checkpoint file. Default is 'checkpoint-{epoch}.pth.tar'.
 #     --pretrained-model-epoch: Epoch number of the pre-trained model to use. Default is 150.
@@ -24,7 +23,7 @@ import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data.distributed
-import horovod.torch as hvd
+# import horovod.torch as hvd
 import torch.nn.functional as F
 import models
 
@@ -50,11 +49,6 @@ parser.add_argument('--acceleration', type=int, default=2, help='Acceleration fa
 parser.add_argument('--model_name', help='CNN denoiser model.')
 parser.add_argument('--num-channels', type=int, default=1, help='3 for rgb images and 1 for gray scale images')
 parser.add_argument('--batch-size', help='Batch size.', type=int)
-parser.add_argument('--batches-per-allreduce', type=int, default=1,
-                    help='number of batches processed locally before executing allreduce across workers;'
-                    'It multiplies the total batch size. (RHR: 1 loss function eqs 1 batches-per-allreduce')
-parser.add_argument('--fp16-allreduce', action='store_true', default=False,
-                    help='use fp16 compression during allreduce')
 parser.add_argument('--pretrained-model-path', help='The previous trained model (provide path).')
 parser.add_argument('--pretrained-model-checkpoint-format', default='{model_name}_{task}_acc_{acceleration}/' \
                     'checkpoint-{epoch}.pth.tar', help='checkpoint file format')
@@ -73,13 +67,19 @@ acceleration = args.acceleration  # acceleration factor
 if acceleration not in [4, 8]: print('Warning! For acceleration factors other than 4, 8 train your \
                                DL postprocessor accordingly and save the checkpoints in the \
                                trained_model folder.')
+# ----------------------------------------------------------------------------
+# horovod for testing is turned off (i.e., no multi-gpu testing),
+# the following are hard coded for processing using 1 GPU
+# ---------------------------------------------------------------------------
+NGPUS                  = 1
+RANK                   = 0
+verbose                = 1 # for tqdm output
+HVD                    = None
 
 # ----------------------------CMD Line Inputs-----------------------------------------------------#
 model_name            = args.model_name
 num_channels          = args.num_channels
 batch_size            = args.batch_size
-batches_per_allreduce = args.batches_per_allreduce
-allreduce_batch_size  = batch_size * batches_per_allreduce
 test_data_in_path     = args.test_path
 test_data_in_file     = test_data_in_path + "/test_acc" + str(acceleration) + "_rsos.hdf5" #input file path
 output_path           = "./ai_rec/test_acc"  + str(acceleration) + "_" + model_name   # output file path
@@ -121,8 +121,6 @@ pretrained_model_checkpoint_format = args.pretrained_model_checkpoint_format.for
                                     task=args.task, acceleration=args.acceleration, epoch=args.pretrained_model_epoch)
 pretrained_model_path              = os.path.join(args.pretrained_model_path, pretrained_model_checkpoint_format)
 
-hvd.init()
-
 # ------------------------------------- CUDA for PyTorch ------------------------------------------#
 use_cuda = torch.cuda.is_available()
 device   = torch.device("cuda" if use_cuda else "cpu")
@@ -132,67 +130,55 @@ if use_cuda:
     torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = True  # allow fp16 compression
     torch.backends.cuda.matmul.allow_tf32 = True  # allow TF32 compression for faster calculation
     # Horovod: pin GPU to local rank.
-    torch.cuda.set_device(hvd.local_rank())
+    torch.cuda.set_device(RANK)
 cudnn.benchmark = True
 
 # Display command line arguments
-if hvd.rank() == 0:
-  print('\n----------------------------------------')
-  print('Command line arguements')
-  print('----------------------------------------')
-  print("\nNo. of gpus used:", hvd.size())
-  for i in args.__dict__: print((i), ':', args.__dict__[i])
-  print('pretrained model full path:', pretrained_model_path)
-  print("testing data full path    : " + test_data_in_file, flush=True)
-  print('\n----------------------------------------\n')
 
-# Horovod: print logs on the first worker
-verbose = 1 if hvd.rank() == 0 else 0
+print('\n----------------------------------------')
+print('Command line arguements')
+print('----------------------------------------')
+print("\nNo. of gpus used:", NGPUS)
+for i in args.__dict__: print((i), ':', args.__dict__[i])
+print('pretrained model full path:', pretrained_model_path)
+print("testing data full path    : " + test_data_in_file, flush=True)
+print('\n----------------------------------------\n')
+
 
 # ==================================================================
 # Load Model and transfer it to cuda
 # ==================================================================
-if hvd.rank() == 0: print("Load model .... \n")
+print("Load model .... \n")
 if use_cuda: model = model.cuda()
 
-# if hvd.rank()==0: 
-#  summary(model, (args.num_channels, dim1, dim2))
-# Restore from a trained model.
-# Horovod: restore on the first worker which will broadcast weights to other workers.
-
-if hvd.rank() == 0:
-    checkpoint = torch.load(pretrained_model_path)
-    model.load_state_dict(checkpoint['model'])
-    print("Loaded trained network from:", pretrained_model_path, flush=True)
-
-# Horovod: broadcast parameters & optimizer state.
-hvd.broadcast_parameters(model.state_dict(), root_rank=0)
+checkpoint = torch.load(pretrained_model_path)
+model.load_state_dict(checkpoint['model'])
+print("Loaded trained network from:", pretrained_model_path, flush=True)
 
 # ==================================================================
 # load test data
 # ==================================================================
 kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
-test_dataset = DatasetFromHdf5(hvd=hvd, file_path=test_data_in_file, \
-                              mod_num=hvd.size() * batch_size)
+test_dataset = DatasetFromHdf5(hvd=HVD, file_path=test_data_in_file, \
+                              mod_num=NGPUS * batch_size)
 test_sampler = torch.utils.data.distributed.DistributedSampler(
-    test_dataset, num_replicas=hvd.size(), rank=hvd.rank(), shuffle=False)
+    test_dataset, num_replicas=NGPUS, rank=RANK, shuffle=False)
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,
                                          sampler=test_sampler, **kwargs)
 
-if hvd.rank() == 0:
-    print('Trained %s is applied to %d subsampled MR images\n' % (args.model_name, len(test_dataset.data)), flush=True)  #
-    print('Data range [min, max] in this set: [%.4f, %.4f]' % (np.min(test_dataset.data), np.max(test_dataset.data)), flush=True)
-    print('Shape of the loaded data is:', test_dataset.data.shape, 'and its dtype is:', test_dataset.data[0].dtype, flush=True)
-    if args.model_name == 'unet':
-        print('Data is padded in x-y dim to be', dim1+12, dim2+9)
-    print('Below is the %s architecture' %(args.model_name))
-    summary(model, (args.num_channels, dim1+12, dim2+9))
-    test_tot_size   = test_dataset.data.shape[0]
-    test_half_size  = int(test_tot_size/2)
+print('Trained %s is applied to %d subsampled MR images\n' % (args.model_name, len(test_dataset.data)), flush=True)  #
+print('Data range [min, max] in this set: [%.4f, %.4f]' % (np.min(test_dataset.data), np.max(test_dataset.data)), flush=True)
+print('Shape of the loaded data is:', test_dataset.data.shape, 'and its dtype is:', test_dataset.data[0].dtype, flush=True)
+if args.model_name == 'unet':
+    print('Data is padded in x-y dim to be', dim1+12, dim2+9)
+print('Below is the %s architecture' %(args.model_name))
+summary(model, (args.num_channels, dim1+12, dim2+9))
+test_tot_size   = test_dataset.data.shape[0]
+test_half_size  = int(test_tot_size/2)
 # ==================================================================
 # test the model
 # ==================================================================
-if hvd.rank() == 0: print("Post-processing the MR images .... ")
+print("Post-processing the MR images .... ")
 test_loss = utils.Metric('test_loss')
 
 noisy_imgs = np.empty([test_tot_size, dim1, dim2])
@@ -214,18 +200,18 @@ with tqdm(total=len(test_loader),
         # i = i + 1
         t.update(1)
 
-if hvd.rank()==0:
-    if args.model_name == 'unet':
-        utils.multi2dplots(1, 2, preds[(test_half_size-1):(test_half_size+1), :, :], 0, \
-                 passed_fig_att={'suptitle':'reconstructed SOM examples with signals at '+str(acceleration)+'x', \
-                                 'split_title': ['Unet on Doublet SOM', 'Unet on Singlet SOM'], \
-                                 'figsize': [10, 4]})
-    preds  = np.reshape(preds, (test_tot_size, 1, dim1, dim2))
-    print('\nShape of the postprocessed data is:', preds.shape, '; and its dtype is:', preds.dtype, flush=True)
-    print('Data range (min, max) of the reconstructed testing data with signal: [%.4f, %.4f]' % (np.min(preds), np.max(preds)))
-    print("Saving hdf5 files to: " + output_path + ".hdf5 as dtype:" + cmpr_dtype)
-    f = h5py.File(output_path + ".hdf5", "w")
-    f.create_dataset('H_d', data=preds[:test_half_size,:,:,:], dtype=cmpr_dtype) #dublet
-    f.create_dataset('H_s', data=preds[test_half_size:,:,:,:], dtype=cmpr_dtype) #singlet
-    #f.create_dataset('L_list', data=L_list, dtype=cmpr_dtype)
-    f.close()
+
+if args.model_name == 'unet':
+    utils.multi2dplots(1, 2, preds[(test_half_size-1):(test_half_size+1), :, :], 0, \
+                passed_fig_att={'suptitle':'reconstructed SOM examples with signals at '+str(acceleration)+'x', \
+                                'split_title': ['Unet on Doublet SOM', 'Unet on Singlet SOM'], \
+                                'figsize': [10, 4]})
+preds  = np.reshape(preds, (test_tot_size, 1, dim1, dim2))
+print('\nShape of the postprocessed data is:', preds.shape, '; and its dtype is:', preds.dtype, flush=True)
+print('Data range (min, max) of the reconstructed testing data with signal: [%.4f, %.4f]' % (np.min(preds), np.max(preds)))
+print("Saving hdf5 files to: " + output_path + ".hdf5 as dtype:" + cmpr_dtype)
+f = h5py.File(output_path + ".hdf5", "w")
+f.create_dataset('H_d', data=preds[:test_half_size,:,:,:], dtype=cmpr_dtype) #dublet
+f.create_dataset('H_s', data=preds[test_half_size:,:,:,:], dtype=cmpr_dtype) #singlet
+# f.create_dataset('L_list', data=L_list, dtype=cmpr_dtype)
+f.close()

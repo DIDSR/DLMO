@@ -38,6 +38,17 @@ def list_all_npy_files(super_path, cmpr_dtype=None, unity_normalize=False):
                     idx = idx +1
     return(arr_accumulator)
 
+def not_found_print(ftype):
+    if ftype == 'h5':
+        print('\n-------------------------------------------------------------')
+        print(f"ERROR!! {ftype} files not found. Re-check the file paths.")
+        print('\n-------------------------------------------------------------')
+        sys.exit()
+    elif ftype == 'keys':
+        print('\n--------------------------------------------------------------------')
+        print(f"ERROR!! {ftype} not found in h5 files. Re-check the keys in h5 files.")
+        print('\n--------------------------------------------------------------------')
+        sys.exit()
 
 class DatasetFromHdf5(Dataset):
 # A custom Dataset class for loading data from HDF5 files.
@@ -65,19 +76,17 @@ class DatasetFromHdf5(Dataset):
                 H_s = hf.get("H_s") #H_O is signlet 
                 H_d = hf.get("H_d") #H_1 is dublet
                 # appended as dublet and then signlet -> aligning with how signal was added in demo2
-                self.data = np.append(H_d, H_s, axis=0) #np.append(H0, H1, axis=0)
+                self.data = np.append(H_d, H_s, axis=0) #np.append(H1, H0, axis=0)
             else:
-                if hvd.rank() == 0:
-                    print('\n-------------------------------------------------------------')
-                    print("ERROR! No training/tuning h5 files. Re-check input data paths.")
-                    print('--------------------------------------------------------------')
-                    sys.exit()
+                if hvd is not None:
+                    if hvd.rank() == 0: not_found_print('keys')
+                else:
+                    not_found_print('keys')
         else:
-            if hvd.rank() == 0:
-                    print('\n----------------------------------------------------------------------------')
-                    print("ERROR! Issues related to training/tuning path. Re-check data-fname option.")
-                    print('------------------------------------------------------------------------------')
-                    sys.exit()
+            if hvd is not None: 
+                if hvd.rank() == 0: not_found_print('h5')
+            else:
+                not_found_print('h5')  
         if np.mod(self.data.shape[0], mod_num) != 0:
             if drop_style == 'remove_last':
                 # this option removes last b patches where a (mod n) eq b

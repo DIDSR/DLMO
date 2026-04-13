@@ -12,8 +12,17 @@
 #
 # To use, source the following environment.
 # source /anaconda3/base_env.sh
-# source /anaconda3/horovod_sm80_env.sh
+# conda activate dlmo
 
+# ****************************************************
+# ****************************************************
+# this Multi GPU  inference file is commented 
+# primarily because the inference code from line 173
+# on-wards is not multi-gpu adjusted for different
+# processors working on different arrays.
+# ****************************************************
+
+'''
 import torch
 import numpy as np
 import argparse
@@ -21,7 +30,7 @@ import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data.distributed
-import horovod.torch as hvd
+import horovod.torch as hvd # works only if horovod is configured
 import torch.nn.functional as F
 from models import Net_7conv2_dropout as DLMO_Net
 from sklearn.metrics import roc_auc_score
@@ -198,3 +207,4 @@ if hvd.rank() == 0:
     # pred array stores H_d pred and then H_s pred --------------------------------------------------------
     auc = roc_auc_score(np.concatenate((np.zeros(test_half_size), np.ones(test_half_size)), axis=0), preds)
     print("Acceleration factor: " + str(acceleration) + " AUC: " + str(auc))
+'''

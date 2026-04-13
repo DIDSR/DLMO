@@ -53,12 +53,10 @@ TRAINED_MODEL_PATH=./trained_model/mri_cnn_dlmo_acc_${ACC}_hvd/ # for rsos recon
 # Transfer learning is employed for DLMO training for accelerated rSOS and unet recon
 EPOCH=50
 
-python dlmo_test_hvd.py --task rayleigh \
+python dlmo_test.py --task rayleigh \
 --test-path $TEST_PATH \
 --acceleration ${ACC} \
 --batch-size 10 \
---batches-per-allreduce 1 \
---fp16-allreduce \
 --pretrained-model-path $TRAINED_MODEL_PATH \
 --pretrained-model-epoch $EPOCH
 ```

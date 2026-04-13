@@ -6,6 +6,18 @@ import os
 import glob
 import sys
 
+def not_found_print(ftype):
+    if ftype == 'h5':
+        print('\n-------------------------------------------------------------')
+        print(f"ERROR!! {ftype} files not found. Re-check the file paths.")
+        print('\n-------------------------------------------------------------')
+        sys.exit()
+    elif ftype == 'keys':
+        print('\n--------------------------------------------------------------------')
+        print(f"ERROR!! {ftype} not found in h5 files. Re-check the keys in h5 files.")
+        print('\n--------------------------------------------------------------------')
+        sys.exit()
+   
 
 class DatasetFromNpz(Dataset):
 # A custom Dataset class for loading data from .npz or .npy files.
@@ -87,26 +99,23 @@ class DatasetFromHdf5(Dataset):
                     H_s = hf.get("H_s")
                     H_d = hf.get("H_d")
                 else:
-                    if hvd.rank() == 0:
-                        print('\n-------------------------------------------------------------')
-                        print("ERROR! HDF5 must have (H_0, H_1) or (H_s, H_d) keys.")
-                        print('--------------------------------------------------------------')
-                    sys.exit()
+                    if hvd is not None:
+                        if hvd.rank() == 0: not_found_print('keys')
+                    else:
+                        not_found_print('keys')
                 self.data = np.append(H_d, H_s, axis=0)
                 # assigning target values for dublet as 0 and singlet as 1 -----------------------------------------------------
                 self.target = np.concatenate((np.zeros([H_d.shape[0], 1], dtype=H_d.dtype), np.ones([H_s.shape[0], 1], dtype=H_s.dtype)), axis=0)
             else:
-                if hvd.rank() == 0:
-                    print('\n-------------------------------------------------------------')
-                    print("ERROR! No h5 files found. Re-check input data paths.")
-                    print('--------------------------------------------------------------')
-                    sys.exit()
+                if hvd is not None: 
+                    if hvd.rank() == 0: not_found_print('h5')
+                else: 
+                    not_found_print('h5')
         else:
-            if hvd.rank() == 0:
-                    print('\n----------------------------------------------------------------------------')
-                    print("ERROR! No h5 files found. Re-check input data paths.")
-                    print('------------------------------------------------------------------------------')
-                    sys.exit()
+            if hvd is not None: 
+                if hvd.rank() == 0: not_found_print('h5')
+            else:
+                not_found_print('h5')   
         if np.mod(self.data.shape[0], mod_num) != 0:
             if drop_style == 'remove_last':
                 # this option removes last b patches where a (mod n) eq b
@@ -127,7 +136,7 @@ class DatasetFromHdf5(Dataset):
                 extra_target = self.target[add_ind]
                 # gf.multi2dplots(3, 3, extra_target[:, 0,:,:], 0)
                 # gf.multi2dplots(3, 3, extra_input[:, 0,:,:], 0)
-                sys.exit()
+                # sys.exit()
 
     def __len__(self):
         return self.data.shape[0]

@@ -5,12 +5,12 @@ This example estimates the probability of doublet signal using a trained deep le
 1. Concretely, it takes pretrained DLMO weights and MR-reconstructed images as input, and outputs the probability of whether the MR image contains doublet or singlet signals.
 2. Re-run this script by updating paths for different reconstruction methods to obtain the corresponding DLMO discrimination outputs.
 
-## Single observer run (`dlmo_test_hvd.py`)
+## Single observer run (`dlmo_test.py`)
 
 Usage:
 
 ```
-python dlmo_test_hvd.py [-h] [--task TASK] [--test-path TEST_PATH]
+python dlmo_test.py [-h] [--task TASK] [--test-path TEST_PATH]
                         [--cnn-denoiser-name CNN_DENOISER_NAME]
                         [--acceleration ACCELERATION]
                         [--num-channels NUM_CHANNELS]

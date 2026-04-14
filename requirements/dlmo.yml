@@ -110,7 +110,7 @@ dependencies:
       - fastjsonschema==2.18.1
       - fonttools==4.38.0
       - fqdn==1.5.1
-      - horovod==0.28.1
+      #- horovod==0.28.1
       - imageio==2.31.2
       - importlib-metadata==6.7.0
       - importlib-resources==5.12.0

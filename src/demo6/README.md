@@ -1,6 +1,6 @@
 # Statistical analysis
 
-Statistical analysis includes two example scripts: 1) sample size determination using a pilot data and 2) statistical analysis for a pivotal study. Pre-installation of the iMRMC application is **NOT** recommended for the use of these scripts.
+Statistical analysis includes two example R scripts: 1) sample size determination using a pilot data and 2) statistical analysis for a pivotal study. These R scripts have been tested with versions `4.3.1` and `4.4.1`. Pre-installation of the iMRMC application is **NOT** recommended for the use of these scripts. 
 
 This demo also includes supporting material in `sample_size_4rm_pilot_study/` and helper R functions in `iMRMC_2AFC/`.
 

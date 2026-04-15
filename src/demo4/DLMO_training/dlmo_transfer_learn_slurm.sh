@@ -4,7 +4,6 @@
 		#SBATCH --partition=medium
 #SBATCH --constraint=gpu_mem_80
 		# Resources needed for job:
-#SBATCH --account=cdrhid0024		# Project ID
 #SBATCH --gres=gpu:4			# number of gpus
 #SBATCH --mem=400G			# memory limit
 #SBATCH --ntasks-per-node=1
@@ -26,8 +25,7 @@ echo "NGPUS:"$NGPUS
 
 echo
 echo "==== setup cuda environment"
-source /anaconda3/base_env.sh
-source /anaconda3/horovod_sm80_env.sh
+conda activate dlmo # with horovod build
 echo
 echo "====" `date +%Y%m%d-%H%M%S` "begin GPU sample programs from the CUDA toolkit"
 echo
@@ -53,6 +51,27 @@ time horovodrun -np 4 -H localhost:4 python ${PY_FILE} --task rayleigh \
 --pretrained-model-epoch ${PRETRAIN_EPOCH} \
 --log-file-format log.hdf5
 
+PRETRAIN_EPOCH=170
+ACC=4
+
+PRETRAIN_PATH=../../demo5/DLMO_test/trained_model/mri_cnn_dlmo_acc_1_hvd/
+TRAIN_DATA_PATH= #train path with 160k accelerated MR recon images
+VAL_DATA_PATH= #tuning path with 8000 accelerated MR recon images
+OUTPUT_FLD_PATH=trained_model/mri_cnn_dlmo_acc_
+
+time NCCL_DEBUG=INFO horovodrun -np $NGPUS -H localhost:$NGPUS python dlmo_train_hvd.py \
+--acceleration $ACC \
+--nepochs 50  \
+--train-data-path $TRAIN_DATA_PATH \
+--val-data-path $VAL_DATA_PATH \
+--output-path $OUTPUT_FLD_PATH \
+--batch-size 160 \
+--val-batch-size 250 \
+--shuffle_patches \
+--pretrained-model-path ${PRETRAIN_PATH} \
+--pretrained-model-epoch ${PRETRAIN_EPOCH} \
+--save-log-ckpts \
+--log-file-format log_${NGPU}_gpus.hdf5
 
 # Get end of job information
 END_TIME=`date +%s`

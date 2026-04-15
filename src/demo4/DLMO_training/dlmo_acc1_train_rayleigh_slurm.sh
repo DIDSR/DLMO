@@ -4,13 +4,11 @@
 		#SBATCH --partition=medium
 #SBATCH --constraint=gpu_mem_80
 		# Resources needed for job:
-#SBATCH --account=cdrhid0024		# Project ID
 #SBATCH --gres=gpu:4			# number of gpus
 #SBATCH --mem=400G			# memory limit
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=2
 #SBATCH --time=90:00:00			# total run time limit (HH:MM:SS)
-		#SBATCH --nodelist=bc002
 
 echo "====" `date +%Y%m%d-%H%M%S` "begin job $SLURM_JOB_NAME ($SLURM_JOB_ID $SLURM_ARRAY_JOB_ID $SLURM_ARRAY_TASK_ID) on node $SLURMD_NODENAME on cluster $SLURM_CLUSTER_NAME"
 
@@ -26,8 +24,7 @@ echo "NGPUS:"$NGPUS
 
 echo
 echo "==== setup cuda environment"
-source /anaconda3/base_env.sh
-source /anaconda3/horovod_sm80_env.sh
+conda activate dlmo # with horovod build
 echo
 echo "====" `date +%Y%m%d-%H%M%S` "begin GPU sample programs from the CUDA toolkit"
 echo
@@ -40,13 +37,24 @@ START_TIME=`date +%s`
 host_node=$SLURMD_NODENAME
 PY_FILE=dlmo_train_hvd.py
 
-time horovodrun -np 4 -H localhost:4 python ${PY_FILE} --task rayleigh \
---acceleration 1 \
+ACC=1
+NEPOCH=170 
+TRAIN_DATA_PATH= #train path with 160k fully sampled MR recon images
+VAL_DATA_PATH= #tuning path with 8000 fully sampled MR recon
+OUTPUT_FLD_PATH=trained_model/mri_cnn_dlmo_acc_
+
+
+time horovodrun -np $NGPUS -H localhost:$NGPUS python dlmo_train_hvd.py \
+--acceleration $ACC \
+--nepochs $NEPOCH \
+--train-data-path $TRAIN_DATA_PATH \
+--val-data-path $VAL_DATA_PATH \
+--output-path $OUTPUT_FLD_PATH \
 --batch-size 160 \
 --val-batch-size 250 \
 --shuffle_patches \
 --save-log-ckpts \
---log-file-format log.hdf5
+--log-file-format log_${NGPU}_gpus.hdf5
 
 
 # Get end of job information

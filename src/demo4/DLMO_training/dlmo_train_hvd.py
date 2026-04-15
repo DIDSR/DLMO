@@ -36,23 +36,28 @@ import utils
 from tqdm import tqdm
 
 # --------------------------------------Some basic settings ---------------------------------------#
-parser = argparse.ArgumentParser(description='Train the CNN IO.')
-parser.add_argument('--task', help='Task type (detection/rayleigh).')
+parser = argparse.ArgumentParser(description='Train the DLMO.')
 parser.add_argument('--acceleration', help='Acceleration factor ([1,2,4,6,8,10,12]).', type=int)
-parser.add_argument('--pretrained-model-path', help='Transfered learning based on a previous trained model (provide path).')
+parser.add_argument('--train-data-path', help='Path to reconstructed MR images (with signals) for training DLMO.', type=str)
+parser.add_argument('--val-data-path', help='Path to few samples of reconstructed MR images \
+                    (with signals) for tuning DLMO.')
+parser.add_argument('--output-path', type=str, default='trained_model', \
+                    help='Path to save checkpoints and log files')
+parser.add_argument('--pretrained-model-path', help='Transfered learning based on a previous \
+                    trained model (provide path).')
 parser.add_argument('--pretrained-model-checkpoint-format', default='checkpoint-{epoch}.pth.tar',
                     help='checkpoint file format')
-parser.add_argument('--pretrained-model-epoch', type=int, default=150, help='Transfered learning based on a previous trained model (provide epoch).')
-parser.add_argument('--batch-size', help='Batch size.', type=int)
-parser.add_argument('--val-batch-size', type=int, default=16, help='input batch size for validation data.')
+parser.add_argument('--pretrained-model-epoch', type=int, default=170, help='Transfered learning \
+                    based on a previous trained model (provide epoch).')
+parser.add_argument('--nepochs', type=int, default=50, help='number of epochs to train')
+parser.add_argument('--batch-size', help='Training batch size.', type=int)
+parser.add_argument('--val-batch-size', type=int, default=16, help='batch size for validation/tuning data.')
 parser.add_argument('--batches-per-allreduce', type=int, default=1,
                     help='number of batches processed locally before executing allreduce across workers;'
                     'It multiplies the total batch size. (RHR: 1 loss function eqs 1 batches-per-allreduce')
 parser.add_argument('--shuffle_patches', action="store_true", \
                     help="shuffles the train/validation patch pairs(input-target) at \
-                                                                    utils.data.DataLoader & not at the HDF5dataloader")
-parser.add_argument('--wd', type=float, default=0.0,
-                    help='weight decay a.k.a regularization on weights')
+                    utils.data.DataLoader & not at the HDF5dataloader")
 parser.add_argument('--fp16-allreduce', action='store_true', default=False,
                     help='use fp16 compression during allreduce')
 parser.add_argument('--checkpoint-format', default='checkpoint-{epoch}.pth.tar',
@@ -63,49 +68,29 @@ parser.add_argument('--log-file-format', default='log-{epoch}.pkl',
 
 args = parser.parse_args()
 
-task_type = args.task  # task type (detection/rayleigh)
-if task_type not in ['detection', 'rayleigh']:
-    print('Invalid task type.', flush=True)
-    sys.exit()
-
 acceleration = args.acceleration  # acceleration factor
 if acceleration not in [1, 2, 4, 6, 8]:
     print('Invalid acceleration factor.', flush=True)
     sys.exit()
+# CMD variables ---------------------------------------------
+batch_size             = args.batch_size #training batch size 
+val_batch_size         = args.val_batch_size # validation batch size 
+batches_per_allreduce  = args.batches_per_allreduce
+allreduce_batch_size   = batch_size * batches_per_allreduce
+max_epochs             = args.nepochs
+epoch_start            = 0
+verbose_batch_idx      = int(val_batch_size/4)
 
-batch_size = args.batch_size
-val_batch_size = args.val_batch_size
-batches_per_allreduce = args.batches_per_allreduce
-allreduce_batch_size = batch_size * batches_per_allreduce
-
-pretrained_model_path = args.pretrained_model_path
+# Paths to i/o files --------------------------------------
+train_data_path        = args.train_data_path   
+val_data_path          = args.val_data_path
+args.output_path       = args.output_path + str(acceleration) + "_hvd/"
+output_path            = args.output_path 
+pretrained_model_path  = args.pretrained_model_path
 pretrained_model_epoch = args.pretrained_model_epoch
 
-epoch_start = 0
-max_epochs = 200
-
-train_data_path = "./train_data/"
-val_data_path = "./test_data/"
-
-output_path = "../../demo5/DLMO_test/trained_model/mri_" + task_type + "_acc_" + str(acceleration) + "_hvd/"
-if not os.path.isdir(output_path): os.makedirs(output_path, exist_ok=True)
-
-dim1, dim2 = 260, 311
-n_std = 15  # # is the always 15 for all acceleration factors ? KL: Yes
-n_coil = 8
-cmpr_dtype = 'float32'
-
-te_half_size = 4000
-te_tot_size = 2 * te_half_size
-
-tr_tot_size = 160000
-
-if te_tot_size % batch_size != 0:
-    print("Batch size should divide the total testing size.")
-    sys.exit()
-elif tr_tot_size % batch_size != 0:
-    print("Batch size should divide the total training size.")
-    sys.exit()
+dim1, dim2        = 260, 311
+cmpr_dtype        = 'float32'
 
 if cmpr_dtype == 'float16':
     torch_dtype = torch.float16
@@ -113,12 +98,14 @@ else:
     torch_dtype = torch.float32
 
 if args.save_log_ckpts:
+    # creating the main output dir 
+    if not os.path.isdir(output_path): os.makedirs(output_path, exist_ok=True)
     # declaring the checkpoint fname
-    checkpoint_folder = output_path + '/hvd_cpts/'
+    checkpoint_folder = output_path + 'hvd_cpts/'
     if not os.path.isdir(checkpoint_folder): os.makedirs(checkpoint_folder, exist_ok=True)
     args.checkpoint_format = os.path.join(checkpoint_folder, args.checkpoint_format)
     # declaring the log fname
-    current_log_folder = output_path + '/hvd_log/'
+    current_log_folder = output_path + 'hvd_log/'
     if not os.path.isdir(current_log_folder): os.makedirs(current_log_folder, exist_ok=True)
     args.log_file_format = os.path.join(current_log_folder, args.log_file_format)
 
@@ -152,28 +139,42 @@ verbose = 1 if hvd.rank() == 0 else 0
 # ==================================================================
 kwargs = {'num_workers': 1, 'pin_memory': True} if use_cuda else {}
 
-train_dataset = DatasetFromHdf5(hvd=hvd, file_path=train_data_path + "train_acc" + str(acceleration) + "_rsos.hdf5", \
+train_dataset = DatasetFromHdf5(hvd=hvd, file_path=train_data_path, \
                                 mod_num=hvd.size() * batch_size)
 
 train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset, \
-  num_replicas=hvd.size(), rank=hvd.rank(), shuffle=args.shuffle_patches)
-train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=allreduce_batch_size, \
-  sampler=train_sampler, **kwargs)
-if hvd.rank() == 0: print(" Dimension of training (input <-> target) batches is: {} <-> {}".format(train_dataset.data.shape, \
-  train_dataset.target.shape))
+                num_replicas=hvd.size(), rank=hvd.rank(), shuffle=args.shuffle_patches)
+train_loader  = torch.utils.data.DataLoader(train_dataset, batch_size=allreduce_batch_size, \
+               sampler=train_sampler, **kwargs)
+tr_tot_size   = train_dataset.data.shape[0]
+#dim1          = train_dataset.data.shape[2]
+#dim2          = train_dataset.data.shape[3]
 
+# ensuring total size % (batch-size*NPUG) =0 is taken care withing hdf5 read function ------
+#if tr_tot_size % (batch_size*hvd.size()) != 0:
+#    print("ERROR! total training images must be divisible by train batch size * NGPUS.")
+#    sys.exit("ERROR! re-enter a differnt training batch size.")
+# ------------------------------------------------------------------------------------------
+if hvd.rank() == 0: print(" Dimension of training (input <-> target) batches is: {} <-> {}"\
+                        .format(train_dataset.data.shape, train_dataset.target.shape))
+    
 # ==================================================================
 # load validation data
 # ==================================================================
-val_dataset = DatasetFromHdf5(hvd=hvd, file_path=val_data_path + "val_acc" + str(acceleration) + "_rsos.hdf5", \
+val_dataset = DatasetFromHdf5(hvd=hvd, file_path=val_data_path, \
                               mod_num=hvd.size() * val_batch_size)
 val_sampler = torch.utils.data.distributed.DistributedSampler(
     val_dataset, num_replicas=hvd.size(), rank=hvd.rank(), shuffle=args.shuffle_patches)
 val_loader = torch.utils.data.DataLoader(val_dataset, batch_size=val_batch_size,
                                          sampler=val_sampler, **kwargs)
-if hvd.rank() == 0: print(" Dimension of validation (input <-> target) batches is: {} <-> {}".format(val_dataset.data.shape, \
-  val_dataset.target.shape))
-
+val_tot_size = val_dataset.data.shape[0]
+# ensuring total size % (batch-size*NPUG) =0 is taken care withing hdf5 read function ------
+# if val_tot_size % (val_batch_size*hvd.size()) != 0:
+#    print("ERROR! total validation images must be divisible by val batch size * NGPUS.")
+#    sys.exit("ERROR! re-enter a differnt validation batch size.")
+# ------------------------------------------------------------------------------------------
+if hvd.rank() == 0: print(" Dimension of validation (input <-> target) batches is: {} <-> {}"\
+                            .format(val_dataset.data.shape, val_dataset.target.shape))
 # ==================================================================
 # Initializing Model and objective loss function
 # ==================================================================
@@ -181,8 +182,7 @@ if hvd.rank() == 0: print("Building model .... ")
 net = Net(dim1=dim1, dim2=dim2, filter_size=7)
 
 # transfer models to cuda
-if use_cuda:
-  model = net.cuda()
+if use_cuda: model = net.cuda()
 
 optimizer = optim.Adam(model.parameters(), \
                        lr=(1e-5 * batches_per_allreduce * hvd.size()), \
@@ -237,13 +237,16 @@ for epoch in range(epoch_start, max_epochs):
             loss = criterion(output, target)
             loss.backward()
             train_loss.update(loss, hvd)
-
-            cur_train_acc = roc_auc_score(target.cpu().numpy(), output.cpu().detach().numpy())
-
+            
+            #if hvd.rank()==0: 
+            #    print ('target', target.shape, target.dtype, '\n', target.cpu().detach().numpy() )
+            #    print ('output', output.shape, output.dtype, '\n', output.cpu().detach().numpy())
+            
+            cur_train_acc = roc_auc_score(np.squeeze(target.cpu().detach().numpy()), np.squeeze(output.cpu().detach().numpy()))
             optimizer.step()
 
-            # Validation step (every 50 batches)
-            if (batch_idx + 1) % 50 == 0:
+            # Validation step (every val_batch_size/4)
+            if (batch_idx + 1) % (verbose_batch_idx) == 0:
                 with torch.no_grad():
                     val_outputs_flag = 0
                     for data, target in val_loader:
@@ -265,15 +268,15 @@ for epoch in range(epoch_start, max_epochs):
                 t.set_postfix({'train acc': cur_train_acc, \
                                'val acc': cur_val_acc, \
                                'train loss': train_loss.avg.item()})
-                t.update(50)
+                t.update(verbose_batch_idx)
 
     # Save checkpoints and logs if enabled
     if (args.save_log_ckpts):
         utils.save_checkpoint(epoch, args, hvd, model, optimizer)
-        train_acc_his[epoch] = cur_train_acc
-        val_acc_his[epoch] = cur_val_acc
+        train_acc_his[epoch]  = cur_train_acc
+        val_acc_his[epoch]    = cur_val_acc
         train_loss_his[epoch] = train_loss.avg.item()
-        val_loss_his[epoch] = val_loss.avg.item()
+        val_loss_his[epoch]   = val_loss.avg.item()
         loss_acc = {'train acc': train_acc_his[train_acc_his != 0], \
                     'val acc': val_acc_his[val_acc_his != 0], \
                     'train loss': train_loss_his[train_loss_his != 0], \

@@ -16,7 +16,6 @@ echo "====" `date +%Y%m%d-%H%M%S` "begin job $SLURM_JOB_NAME ($SLURM_JOB_ID $SLU
 echo
 echo "==== examine the GPU environment"
 export CUDA_DEVICE_ORDER=PCI_BUS_ID
-#export NVIDIA_VISIBLE_DEVICES=2
 env | egrep -i 'GPU|CUDA' | sort
 nvidia-smi -L
 nvidia-smi
@@ -39,27 +38,14 @@ host_node=$SLURMD_NODENAME
 PY_FILE=dlmo_train_hvd.py
 PRETRAIN_PATH=../demo5/DLMO_test/trained_model/mri_dlmo_acc_1_hvd/hvd_cpts/
 PRETRAIN_EPOCH=170
-ACC=$SLURM_ARRAY_TASK_ID
-
-time horovodrun -np 4 -H localhost:4 python ${PY_FILE} --task rayleigh \
---acceleration $ACC \
---batch-size 160 \
---val-batch-size 250 \
---shuffle_patches \
---save-log-ckpts \
---pretrained-model-path ${PRETRAIN_PATH} \
---pretrained-model-epoch ${PRETRAIN_EPOCH} \
---log-file-format log.hdf5
-
-PRETRAIN_EPOCH=170
 ACC=4
 
 PRETRAIN_PATH=../../demo5/DLMO_test/trained_model/mri_cnn_dlmo_acc_1_hvd/
 TRAIN_DATA_PATH= #train path with 160k accelerated MR recon images
 VAL_DATA_PATH= #tuning path with 8000 accelerated MR recon images
 OUTPUT_FLD_PATH=trained_model/mri_cnn_dlmo_acc_
-
-time NCCL_DEBUG=INFO horovodrun -np $NGPUS -H localhost:$NGPUS python dlmo_train_hvd.py \
+# parameters used in https://arxiv.org/abs/2602.22535
+time NCCL_DEBUG=INFO horovodrun -np $NGPUS -H localhost:$NGPUS python ${PY_FILE}\
 --acceleration $ACC \
 --nepochs 50  \
 --train-data-path $TRAIN_DATA_PATH \
@@ -71,7 +57,7 @@ time NCCL_DEBUG=INFO horovodrun -np $NGPUS -H localhost:$NGPUS python dlmo_train
 --pretrained-model-path ${PRETRAIN_PATH} \
 --pretrained-model-epoch ${PRETRAIN_EPOCH} \
 --save-log-ckpts \
---log-file-format log_${NGPU}_gpus.hdf5
+--log-file-format log_${NGPUS}_gpus.hdf5
 
 # Get end of job information
 END_TIME=`date +%s`

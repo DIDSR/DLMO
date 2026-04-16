@@ -18,7 +18,7 @@ Main components:
 
 Usage (without horovod build):
 ```
-dlmo_train.py [-h]  [--acceleration ACCELERATION] [--train-data-path TRAIN_DATA_PATH] [--val-data-path VAL_DATA_PATH]
+python dlmo_train.py [-h] [--acceleration ACCELERATION] [--train-data-path TRAIN_DATA_PATH] [--val-data-path VAL_DATA_PATH]
                     [--output-path OUTPUT_PATH] [--pretrained-model-path PRETRAINED_MODEL_PATH]
                     [--pretrained-model-checkpoint-format PRETRAINED_MODEL_CHECKPOINT_FORMAT]
                     [--pretrained-model-epoch PRETRAINED_MODEL_EPOCH] [--nepochs NEPOCHS] --batch-size BATCH_SIZE

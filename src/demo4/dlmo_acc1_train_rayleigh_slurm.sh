@@ -44,7 +44,7 @@ VAL_DATA_PATH= #tuning path with 8000 fully sampled MR recon
 OUTPUT_FLD_PATH=trained_model/mri_cnn_dlmo_acc_
 
 
-time horovodrun -np $NGPUS -H localhost:$NGPUS python dlmo_train_hvd.py \
+time horovodrun -np $NGPUS -H localhost:$NGPUS python ${PY_FILE} \
 --acceleration $ACC \
 --nepochs $NEPOCH \
 --train-data-path $TRAIN_DATA_PATH \
@@ -54,7 +54,7 @@ time horovodrun -np $NGPUS -H localhost:$NGPUS python dlmo_train_hvd.py \
 --val-batch-size 250 \
 --shuffle_patches \
 --save-log-ckpts \
---log-file-format log_${NGPU}_gpus.hdf5
+--log-file-format log_${NGPUS}_gpus.hdf5
 
 
 # Get end of job information

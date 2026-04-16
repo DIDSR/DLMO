@@ -58,13 +58,20 @@ class Metric(object):
 # n (torch.Tensor): The number of metric values added.
 
     def __init__(self, name):
+        # Note that this class metric needs to be reinitialized
+        # for each epoch to re-set the metric values back to 0
+        # before the start of each iteration 
         self.name = name
         self.sum = torch.tensor(0.)
         self.n = torch.tensor(0.)
 
     def update(self, val, hvd):
-        # here values such as mertic loss from outside training/validation
-        # loop for each batch is extracted.
+        # here values such as mertic loss are averaged across batches 
+        # and GPUs. Concretely, if there are 2 batches for 2 GPUs
+        # Ep1:
+        #   batch_0_loss_ave = (batch_0_rank0_loss + batch_1_rank1_loss)/2
+        #   batch_1_loss_ave = ((batch_0_loss_ave) + (batch_1_rank0_loss + batch_1_rank1_loss)/2)/2 
+        #                    = ep1 loss (it will be the same for rank0 and rank1)
         self.sum += hvd.allreduce(val.detach().cpu(), name=self.name)
         self.n += 1
 
@@ -75,15 +82,14 @@ class Metric(object):
 
 # save checkpoint from rank 0 so that weights from other ranks are
 # not repeated
-def save_checkpoint(epoch, args, hvd, model, optimizer):
-    if hvd.rank() == 0:
+def save_checkpoint(epoch, args, gpu_rank, model, optimizer):
+    if gpu_rank == 0: # i.e. save checkpoints only if rank ==0 when using multiple GPUs
         filepath = args.checkpoint_format.format(epoch=epoch + 1)
         state = {
             'model': model.state_dict(),
             'optimizer': optimizer.state_dict(),
         }
         torch.save(state, filepath)
-
 
 # save log from rank 0
 def save_log(epoch, args, hvd, loss_acc):
@@ -94,8 +100,9 @@ def save_log(epoch, args, hvd, loss_acc):
 
 
 # save log from rank 0
-def save_log_to_h5(args, hvd, loss_acc):
-    if hvd.rank() == 0:
+def save_log_to_h5(args, gpu_rank, loss_acc):
+    # i.e. save checkpoints and logs for only rank 0 when using multiple gpus
+    if gpu_rank == 0:
         filepath = args.log_file_format
         f = h5py.File(filepath, "w")
         f.create_dataset('train_loss', data=loss_acc['train loss'])

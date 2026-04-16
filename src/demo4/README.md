@@ -92,7 +92,7 @@ To training the base model with fully-sampled data (at acceleration factor of 1)
 
 ACC=1
 NGPUS=2
-NEPOCH=50 #dummy value
+NEPOCH=120 #dummy value
 TRAIN_DATA_PATH=../demo3/rsos_rec/test_acc4_at_acc1_rsos.hdf5
 VAL_DATA_PATH=../demo3/rsos_rec/test_acc4_at_acc1_rsos.hdf5
 OUTPUT_FLD_PATH=trained_model/mri_cnn_dlmo_acc_

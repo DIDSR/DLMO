@@ -23,7 +23,7 @@ usage: horovodrun -np $NGPUS -H localhost:$NGPUS dlmo_train_hvd.py [-h]
                          [--pretrained-model-checkpoint-format PRETRAINED_MODEL_CHECKPOINT_FORMAT]
                          [--pretrained-model-epoch PRETRAINED_MODEL_EPOCH] [--nepochs NEPOCHS] 
                          [--batch-size BATCH_SIZE] [--val-batch-size VAL_BATCH_SIZE]
-                         [--batches-per-allreduce BATCHES_PER_ALLREDUCE] [--shuffle_patches] 
+                         [--shuffle_patches] 
                          [--fp16-allreduce] [--checkpoint-format CHECKPOINT_FORMAT]
                          [--save-log-ckpts] [--log-file-format LOG_FILE_FORMAT]
 
@@ -45,9 +45,7 @@ optional arguments:
   --nepochs                             number of epochs to train
   --batch-size                          Training Batch size.
   --val-batch-size                      input batch size for the validation/tuning data.
-  --batches-per-allreduce               number of batches processed locally before executing
-                                        allreduce across workers;It multiplies the total batch
-                                        size. (RHR: 1 loss function eqs 1 batches-per-allreduce
+  --wd                                   weight decay a.k.a regularization on weights
   --shuffle_patches                     shuffles the train/validation patch pairs(input-
                                         target) at utils.data.DataLoader & not at the
                                         HDF5dataloader
@@ -72,7 +70,62 @@ TRAIN_DATA_PATH=../demo3/rsos_rec/test_acc4_rsos.hdf5
 VAL_DATA_PATH=../demo3/rsos_rec/test_acc4_rsos.hdf5
 OUTPUT_FLD_PATH=trained_model/mri_cnn_dlmo_acc_
 
-time NCCL_DEBUG=INFO horovodrun -np $NGPUS -H localhost:$NGPUS python dlmo_train_hvd.py \
+time NCCL_DEBUG=INFO horovodrun -np $NGPUS -H localhost:$NGPUS python dlmo_train_hvd_v2.py \
+--acceleration $ACC \
+--nepochs 50  \
+--train-data-path $TRAIN_DATA_PATH \
+--val-data-path $VAL_DATA_PATH \
+--output-path $OUTPUT_FLD_PATH \
+--batch-size 10 \
+--val-batch-size 10 \
+--shuffle_patches \
+--pretrained-model-path ${PRETRAIN_PATH} \
+--pretrained-model-epoch ${PRETRAIN_EPOCH} \
+--save-log-ckpts \
+--log-file-format log_${NGPUS}_gpus.hdf5
+```
+
+To training the base model with fully-sampled data (at acceleration factor of 1):
+
+```
+# conda activate dlmo # with horovod build and trained using A100 GPUS
+
+ACC=1
+NGPUS=2
+NEPOCH=50 #dummy value
+TRAIN_DATA_PATH=../demo3/rsos_rec/test_acc4_at_acc1_rsos.hdf5
+VAL_DATA_PATH=../demo3/rsos_rec/test_acc4_at_acc1_rsos.hdf5
+OUTPUT_FLD_PATH=trained_model/mri_cnn_dlmo_acc_
+
+time horovodrun -np $NGPUS -H localhost:$NGPUS python dlmo_train_hvd.py \
+--acceleration $ACC \
+--nepochs $NEPOCH \
+--train-data-path $TRAIN_DATA_PATH \
+--val-data-path $VAL_DATA_PATH \
+--output-path $OUTPUT_FLD_PATH \
+--batch-size 20 \
+--val-batch-size 20 \
+--shuffle_patches \
+--save-log-ckpts \
+--log-file-format log_${NGPUS}_gpus.hdf5
+```
+
+Examples:
+To train models with transfer learning at accelerated data:
+
+```
+# conda activate dlmo # WITHOUT horovod build 
+
+PRETRAIN_EPOCH=170
+ACC=4
+NGPUS=1
+
+PRETRAIN_PATH=../demo5/DLMO_test/trained_model/mri_cnn_dlmo_acc_1_hvd/
+TRAIN_DATA_PATH=../demo3/rsos_rec/test_acc4_rsos.hdf5
+VAL_DATA_PATH=../demo3/rsos_rec/test_acc4_rsos.hdf5
+OUTPUT_FLD_PATH=trained_model/mri_cnn_dlmo_acc_
+
+time python dlmo_train.py \
 --acceleration $ACC \
 --nepochs 25  \
 --train-data-path $TRAIN_DATA_PATH \
@@ -84,39 +137,4 @@ time NCCL_DEBUG=INFO horovodrun -np $NGPUS -H localhost:$NGPUS python dlmo_train
 --pretrained-model-path ${PRETRAIN_PATH} \
 --pretrained-model-epoch ${PRETRAIN_EPOCH} \
 --save-log-ckpts \
---log-file-format log_${NGPU}_gpus.hdf5
-```
-
-To training the base model with fully-sampled data (at acceleration factor of 1):
-
-```
-# conda activate dlmo # with horovod build and trained using A100 GPUS
-
-python dlmo_train_hvd.py --task rayleigh \
---acceleration 1 \
---batch-size 160 \
---val-batch-size 250 \
---shuffle_patches \
---save-log-ckpts \
---log-file-format log.hdf5
-
-ACC=1
-NGPUS=2
-NEPOCH=25 #dummy value
-TRAIN_DATA_PATH=../demo3/rsos_rec/test_acc4_at_acc1_rsos.hdf5
-VAL_DATA_PATH=../demo3/rsos_rec/test_acc4_at_acc1_rsos.hdf5
-OUTPUT_FLD_PATH=trained_model/mri_cnn_dlmo_acc_
-
-time horovodrun -np $NGPUS -H localhost:$NGPUS python dlmo_train_hvd.py \
---acceleration $ACC \
---nepochs $NEPOCH \
---train-data-path $TRAIN_DATA_PATH \
---val-data-path $VAL_DATA_PATH \
---output-path $OUTPUT_FLD_PATH \
---batch-size 10 \
---val-batch-size 10 \
---shuffle_patches \
---save-log-ckpts \
---log-file-format log_${NGPU}_gpus.hdf5
-```
-
+--log-file-format log_${NGPUS}_gpus.hdf5

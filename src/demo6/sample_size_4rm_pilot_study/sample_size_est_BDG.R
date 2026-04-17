@@ -21,7 +21,7 @@
 # ----------------------------------------------
 N_R_f <- 2         # no. of readers in pivotal study
 N_C_f <- 400       # no. of total cases in pivotal study
-bfc   <- 4 
+bfc   <- 4         # Bonferroni correction by 2 recon methods at two acceleration factors.
 
 # ------------------------------------------------------------------------
 # downloading iMRMC cran is not recommended to run this script.

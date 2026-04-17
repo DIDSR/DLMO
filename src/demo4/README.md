@@ -50,7 +50,7 @@ optional arguments:
   --log-file-format                     log file format
 ```
 
-Non-horovod Examples: To train models with transfer learning on accelerated data:
+Non-horovod Example: Training models with transfer learning on accelerated data:
 
 ```
 # conda activate dlmo # WITHOUT horovod build 
@@ -79,7 +79,7 @@ time python dlmo_train_dum_hvd.py \
 --log-file-format log_${NGPUS}_gpus.hdf5
 ```
 
-Non-horovod Examples: To train models with base model at acceleration=1:
+Non-horovod Example: Training the base model at acceleration=1:
 
 ```
 # conda activate dlmo # WITHOUT horovod build 
@@ -106,7 +106,7 @@ time python dlmo_train_dum_hvd.py \
 
 Usage (with horovod build):
 ```
-horovodrun -np $NGPUS -H localhost:$NGPUS dlmo_train_hvd.py [-h] 
+horovodrun -np $NGPUS -H localhost:$NGPUS python dlmo_train_hvd.py [-h] 
                          [--acceleration ACCELERATION] [--train-data-path TRAIN_DATA_PATH]
                          [--val-data-path VAL_DATA_PATH] [--output-path OUTPUT_PATH]
                          [--pretrained-model-path PRETRAINED_MODEL_PATH]
@@ -145,8 +145,7 @@ optional arguments:
   --log-file-format                     log file format
 ```
 
-Horovod Examples:
-To train models with transfer learning using accelerated data:
+Horovod Example: Training models with transfer learning using accelerated data:
 
 ```
 # conda activate dlmo # with horovod build  and trained using A100 GPUS
@@ -160,7 +159,7 @@ TRAIN_DATA_PATH=../demo3/rsos_rec/test_acc4_rsos.hdf5
 VAL_DATA_PATH=../demo3/rsos_rec/test_acc4_rsos.hdf5
 OUTPUT_FLD_PATH=trained_model/mri_cnn_dlmo_acc_
 
-time NCCL_DEBUG=INFO horovodrun -np $NGPUS -H localhost:$NGPUS python dlmo_train_hvd_v2.py \
+time NCCL_DEBUG=INFO horovodrun -np $NGPUS -H localhost:$NGPUS python dlmo_train_hvd.py \
 --acceleration $ACC \
 --nepochs 50  \
 --train-data-path $TRAIN_DATA_PATH \
@@ -175,7 +174,7 @@ time NCCL_DEBUG=INFO horovodrun -np $NGPUS -H localhost:$NGPUS python dlmo_train
 --log-file-format log_${NGPUS}_gpus.hdf5
 ```
 
-To train the base model with fully-sampled data (at acceleration=1):
+Horovod Example: Training the base model at the fully-sampled data (at acceleration=1):
 
 ```
 # conda activate dlmo # with horovod build and trained using A100 GPUS

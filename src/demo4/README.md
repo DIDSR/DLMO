@@ -58,15 +58,16 @@ Non-horovod Example: Training models with transfer learning on accelerated data:
 PRETRAIN_EPOCH=170
 ACC=4
 NGPUS=1
+NEPOCH=35 #dummy value
 
 PRETRAIN_PATH=../demo5/DLMO_test/trained_model/mri_cnn_dlmo_acc_1_hvd/
 TRAIN_DATA_PATH=../demo3/rsos_rec/test_acc4_rsos.hdf5
 VAL_DATA_PATH=../demo3/rsos_rec/test_acc4_rsos.hdf5
 OUTPUT_FLD_PATH=trained_model/mri_cnn_dlmo_acc_
 
-time python dlmo_train_dum_hvd.py \
+time python dlmo_train.py \
 --acceleration $ACC \
---nepochs 35  \
+--nepochs $NEPOCH  \
 --train-data-path $TRAIN_DATA_PATH \
 --val-data-path $VAL_DATA_PATH \
 --output-path $OUTPUT_FLD_PATH \
@@ -91,7 +92,7 @@ TRAIN_DATA_PATH=../demo3/rsos_rec/test_acc4_at_acc1_rsos.hdf5
 VAL_DATA_PATH=../demo3/rsos_rec/test_acc4_at_acc1_rsos.hdf5
 OUTPUT_FLD_PATH=trained_model/mri_cnn_dlmo_acc_
 
-time python dlmo_train_dum_hvd.py \
+time python dlmo_train.py \
 --acceleration $ACC \
 --nepochs $NEPOCH \
 --train-data-path $TRAIN_DATA_PATH \
@@ -153,6 +154,7 @@ Horovod Example: Training models with transfer learning using accelerated data:
 PRETRAIN_EPOCH=170
 ACC=4
 NGPUS=2
+NEPOCH=50 #dummy value
 
 PRETRAIN_PATH=../demo5/DLMO_test/trained_model/mri_cnn_dlmo_acc_1_hvd/
 TRAIN_DATA_PATH=../demo3/rsos_rec/test_acc4_rsos.hdf5
@@ -161,7 +163,7 @@ OUTPUT_FLD_PATH=trained_model/mri_cnn_dlmo_acc_
 
 time NCCL_DEBUG=INFO horovodrun -np $NGPUS -H localhost:$NGPUS python dlmo_train_hvd.py \
 --acceleration $ACC \
---nepochs 50  \
+--nepochs $NEPOCH  \
 --train-data-path $TRAIN_DATA_PATH \
 --val-data-path $VAL_DATA_PATH \
 --output-path $OUTPUT_FLD_PATH \

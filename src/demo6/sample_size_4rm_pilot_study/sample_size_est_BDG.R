@@ -19,8 +19,9 @@
 # Change these numbers until you 
 # get output as “Good design.”
 # ----------------------------------------------
-N_R_f <- 1         # no. of readers in pivotal study
-N_C_f <- 160*N_R_f # no. of total cases in pivotal study
+N_R_f <- 2         # no. of readers in pivotal study
+N_C_f <- 400       # no. of total cases in pivotal study
+bfc   <- 4 
 
 # ------------------------------------------------------------------------
 # downloading iMRMC cran is not recommended to run this script.
@@ -106,6 +107,7 @@ diff_AUC_up <- diff_AUC + 2.5 * se_diff
 
 cat("\n")
 cat("Pilot study results:", "\n")
+cat(paste("se_diff:", se_diff, "\n"))
 cat(paste(
   "Difference in AUCs: ",
   diff_AUC,
@@ -120,7 +122,7 @@ cat(paste(
 # ----------------------------------------------------------------------------
 # Sample size output for pivotal study
 # ----------------------------------------------------------------------------
-z_alpha_2_sided <- qnorm(1 - 0.05/(2*N_R_f))
+z_alpha_2_sided <- qnorm(1 - 0.05/(2*bfc))
 c1sp <- 1 / N_C_f
 c4sp <- (N_C_f - N_R_f) / (N_R_f * N_C_f)
 c5sp <- 0
@@ -128,7 +130,8 @@ c8sp <- -1 / N_R_f
 
 se_BDG <- calc_se_mrmc(c1sp, c4sp, c5sp, c8sp, M1, M4, M5, M8)
 
-
+# new se_diff value changes with changes in no. of final readers
+# this does not align with pdf doc. 
 new_se_diff <- (se_BDG ^ 2 + var_dlmo) ^ .5
 
 diff_AUC_low <- diff_AUC - z_alpha_2_sided * new_se_diff

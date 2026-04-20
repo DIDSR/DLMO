@@ -51,7 +51,7 @@ The example codes below demonstrate how to run the DLMO. Before running the code
 
 
 ## License and Copyright
-DLMO is distributed under the MIT license. See [LICENSE](https://github.com/DIDSR/DLMO/tree/main/LICENSE) for more information.
+DLMO is distributed under CC0 1.0 Liscense. See [LICENSE](https://github.com/DIDSR/DLMO/tree/main/LICENSE) for more information.
 
 ## Citation
 If you use the DLMO data or code in your project, please cite its [arXiv paper](https://arxiv.org/abs/2602.22535):

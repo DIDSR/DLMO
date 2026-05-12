@@ -1,5 +1,7 @@
 # Evaluating the resolution of AI-based accelerated MR reconstruction using a DLMO
-This **DLMO (Deep Learning Model Observer)** implementation evaluates multi-coil sensitivity encoding parallel MR imaging systems at different acceleration factors on the Rayleigh discrimination task as a surrogate measure of resolution, as detailed in [our DLMO paper](https://arxiv.org/abs/2602.22535). You can implement the DLMO approach with other image acquisition settings and reconstruction methods to demonstrate their diagnostic efficacy.
+This use-case demo illustrates **DLMO (Deep Learning Model Observer)**-based assessment on a discrimination task as a surrogate for MRI resolution, as detailed in [our DLMO paper](https://arxiv.org/abs/2602.22535). The implementation simulates multi-coil, sensitivity-encoded parallel MR imaging at varying acceleration factors, using fully sampled root of sum of squares (rSOS) reconstruction as the reference and U-Net post-processing of undersampled reconstructions as the test method.
+
+The signal content can be adapted to a signal-present versus signal-absent configuration for detection tasks, as described in the [CNN-IO paper](https://pmc.ncbi.nlm.nih.gov/articles/PMC11774454/). The same DLMO framework can also be applied to other acquisition settings and reconstruction methods.
 
 ![Evaluation using the DLMO framework](docs/github_fig1.png "Evaluation using the DLMO framework")
 

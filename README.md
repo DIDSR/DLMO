@@ -25,7 +25,7 @@ conda env create --name dlmo --file requirements/dlmo.yml #to run the dlmo codes
 The R scripts in [demo6](https://github.com/DIDSR/DLMO/tree/main/src/demo6) have been tested with versions `4.3.1` and `4.4.1`.
 
 ## Usage
-The example codes below demonstrate how to run the DLMO. Before running the code, update the input paths and adjust the relevant parameters according to your specific application. A demo-by-demo index is also provided in `src/README.md`.
+Example codes below demonstrate how to run the DLMO assessment methodology for a discrimination task, serving as a surrogate for image resolution across reconstruction algorithms as a function of MR acceleration.
 
 1. [**Object generation using DDPM**](https://github.com/DIDSR/DLMO/tree/main/src/demo1)
 

@@ -7,7 +7,7 @@ The signal content can be adapted to a signal-present versus signal-absent confi
 
 ## Requirements
 
-Create a new conda environment and install the required packages as follows:
+To run the DLMO codes, begin by installing it from the following Github repository:
 ```
 git clone https://github.com/DIDSR/DLMO.git
 ```

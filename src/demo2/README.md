@@ -1,6 +1,6 @@
 # Synthetic defect insertion
 
-This script inserts doublet and singlet signals into DDPM generated MR images from demo 1. The singlet versus doublet signals for different signal lengths are determined using the 2AFC-based detection table provided below. This, in turn, means that singlet and doublet signals are set based on the acceleration factor, signal contrast, and signal length (in pixels). This code saves the objects with signals in HDF5 format.
+This script inserts doublet (or two dots) and singlet (or single dot) signals into DDPM-generated MR images from Demo 1. The singlet versus doublet signals for different signal lengths are determined using the 2AFC-based detection table provided below. Accordingly, the signals are defined based on the acceleration factor, signal contrast, and signal length (in pixels). The resulting images with inserted signals are saved in HDF5 format.
 
 Command-line input options:
 
@@ -9,8 +9,9 @@ Command-line input options:
       signal_lengths (str)            : Comma-separated signal separation lengths, e.g. "4,5,6,7,8".
       object_hdf5_path (str, optional): Path to the DDPM-generated objects from demo 1.
 
-Output
-	The output HDF5 files are saved to `./objects/`. Each file contains datasets `H_s` (singlet reconstructions), `H_d` (doublet reconstructions), and `L_list` (signal lengths).
+Output:
+
+	Each output HDF5 file contains the following datasets: `H_s` (singlet images), `H_d` (doublet images), and `L_list` (signal lengths).
 
 Usage:
 

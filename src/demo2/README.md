@@ -9,22 +9,19 @@ Command-line input options:
       signal_lengths (str)            : Comma-separated signal separation lengths, e.g. "4,5,6,7,8".
       object_hdf5_path (str, optional): Path to the DDPM-generated objects from demo 1.
 
-Output:
-
-	Each output HDF5 file contains the following datasets: `H_s` (singlet images), `H_d` (doublet images), and `L_list` (signal lengths).
-
 Usage:
 
 ```
 python signal_insertion_test.py [acceleration factor] [contrast] [signal_lengths] [object_npz_path]
 ```
 
-Examples:
-    Run with acceleration factor 4 corresponding to the 7th row in the 2-AFC table below (also employed for testing in our DLMO paper):
+Examples: A demo run with the acceleration factor set to 4, and the signal length and intensity values corresponding to the 7th row of the 2-AFC table below (this row-based signal lengths and intensity values are also used for testing in our DLMO paper)
 
 ```
 python signal_insertion_test.py 4 0.7 '4,5,6,7,8'
 ```
+
+Output: Each output HDF5 file contains the following datasets: `H_s` (singlet images), `H_d` (doublet images), and `L_list` (signal lengths).
 
 A couple of MR images with the doublet signal corresponding to the demo run.
 
@@ -46,8 +43,6 @@ Note that the limiting conditions for different acceleration factor using iFFT-b
 
 The shaded box indicates combinations of intensity and signal length used to generate testing images that encompass limiting conditions (for acceleration factors 4 and 8), to evaluate whether AI-based reconstruction provides better discriminatory capability than conventional iFFT-based reconstruction.
 
-Furthermore, we want our imaging system and its reconstruction method to perform as well as possible under limiting conditions, (i.e., allow users to detect and discriminate the most challenging combinations of signal length and signal intensity.)
-
 The relevance of this 2AFC study can also be inferred from its close alignment with the smallest signal length (~4 mm) and the lowest signal intensity (~0.3), which are similar to those observed in non-specific white lesion (NSWL) distributions from the fastMRI+ dataset. For this analysis, we include only NSWLs with height and width < 20 px.
 
 <p align="left">
@@ -55,3 +50,7 @@ The relevance of this 2AFC study can also be inferred from its close alignment w
 </p>
 
 From these plots, we observe that NSWLs can be as small as 4–5 px in both width and height, with lower-end intensity values ranging from approximately 50/256 to 75/256. These limiting sizes and intensity values are similar to those obtained in our 2AFC study when MR acquisition is performed at a fully sampled rate.
+
+We want our imaging system and its reconstruction method to perform as well as possible under limiting conditions—i.e., to enable detection and discrimination of the most challenging combinations of signal length and signal intensity. Accordingly, we assess whether discriminatory performance using AI-based reconstruction at an acceleration factor of 4 matches that of iFFT-based reconstruction at an acceleration factor of 1. Similar comparisons are made across other acceleration factors.
+
+These comparisons are first performed along the boundary for a given acceleration factor (i.e., at 0.7 when comparing $4\times$ with $1\times$, and at 1.3 when comparing $8\times$ with $1\times$, corresponding to the shaded boxes in the above listed 2AFC table). If the accelerated reconstruction yields performance comparable to the fully sampled case, the signal intensity is then sequentially decreased (e.g., to 0.6 for the $4\times$ vs. $1\times$ comparison).

@@ -43,7 +43,7 @@ Note that the limiting conditions for different acceleration factor using iFFT-b
 
 The shaded box indicates combinations of intensity and signal length used to generate testing images that encompass limiting conditions (for acceleration factors 4 and 8), to evaluate whether AI-based reconstruction provides better discriminatory capability than conventional iFFT-based reconstruction.
 
-The relevance of this 2AFC study can also be inferred from its close alignment with the smallest signal length (~4 mm) and the lowest signal intensity (~0.3), which are similar to those observed in non-specific white lesion (NSWL) distributions from the fastMRI+ dataset. For this analysis, we include only NSWLs with height and width < 20 px.
+The relevance of this 2AFC study can also be inferred from its close alignment with the smallest signal length (~4 mm) and the lowest signal intensity (~0.3), which are similar to those observed in non-specific white lesion (NSWL) distributions from the fastMRI+ dataset. For this analysis, we predominantly included NSWLs with height and width < 20 px  from the  fastMRI+ dataset.
 
 <p align="left">
 	 <img src="../../docs/pics/nswl_dist.svg"  width="600">

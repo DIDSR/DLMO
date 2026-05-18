@@ -114,15 +114,15 @@ if display_plot:
     num_L_list = [int(x[0]) for x in L_list]
     sig_L_list = np.empty(te_tot_size, dtype=int)
     sig_L_list = [signal_L[x] for x in num_L_list]
-
     sig_L_list_str = [str(x) for x in sig_L_list]
-    
-    demo_hd_few = np.transpose(np.squeeze(testing_data[0:3]), axes=(0, 2, 1))
-    demo_hs_few = np.transpose(np.squeeze(testing_data[(te_half_size+3):(te_half_size+6)]), axes=(0, 2, 1))
     # print(signal_L, type(signal_L))
     # print('signal separation length list (index):', num_L_list)
     # print('signal separation length list (int):', sig_L_list)
     # print('signal separation length list (str):', sig_L_list_str)
+    
+    # transposing and flipping SOMs to display MR images in the standard visualization format
+    demo_hd_few = np.transpose(np.squeeze(testing_data[0:3]), axes=(0, 2, 1))
+    demo_hs_few = np.transpose(np.squeeze(testing_data[(te_half_size+3):(te_half_size+6)]), axes=(0, 2, 1))
     utils.multi2dplots(1, 3, demo_hd_few[:, ::-1, :], axis=0, passed_fig_att={'colorbar': False, 'suptitle':'signal length (in px)', 'split_title': sig_L_list_str[0:3], 'figsize': [12, 5]})
     utils.multi2dplots(1, 3, demo_hs_few[:, ::-1, :], axis=0, passed_fig_att={'colorbar': False, 'suptitle':'signal length (in px)', 'split_title': sig_L_list_str[te_half_size+3:(te_half_size+6)], 'figsize': [12, 5]})
 # save objects with signal insertions into an HDF5 files ----------------------------------------------------------------------------------------------------------------------------

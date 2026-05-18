@@ -73,30 +73,7 @@ test_data_file = sys.argv[4] if len(sys.argv) > 4 else default_test_data_file
 
 loc = np.load(mr_acq_path + "mri_loc.npy")
 wid = 1.75
-"""
-'''commenting this part as demo cmd input
-will include acceleration factor, contrast values and signal lengths.
-'''
-A_dict = {'1':0.3, \
-          '2':0.3, \
-          '4':0.7, \
-          '6':1.0, \
-          '8':1.3}
-A = A_dict[str(acceleration)]
-doublet_L = [4, 5, 6, 7, 8, 9]
 
-# ----------------------------Load sensitivity map-------------------------------------------------#
-''' Loading MR sensitivity coils and applying it during the
-forward modeling is not need for this  signal insertion demo.
-Hence commenting this part
-'''
-map_dir = "sensitivity_8coils.npy"
-sensi_map = np.load(mr_acq_path + map_dir)  # shaped (8, 260, 311)
-sensi_map = np.reshape(sensi_map, (1, -1, dim1, dim2))  # shaped (1, 8, 260, 311)
-sensi_map = torch.tensor(sensi_map, dtype=torch_dtype)
-sensi_map = sensi_map.to(device)
-print('shape of the loaded sensitivity map: ', sensi_map.shape, 'and its dtype is', sensi_map.dtype, flush=True)
-"""
 # ----------------------------------------------Loading the testing data--------------------------#
 print("\nReading the sampled SOMs in file:", test_data_file, flush=True)
 
@@ -131,16 +108,23 @@ print('Data range (min, max) of these SOMs after signal insertion is: [%.4f, %.4
       % (np.min(testing_data), np.max(testing_data)))
 
 if display_plot:
-	# display some of the singlet and dublet MR images ---------------------------------------------------------------------------------------------------------------------------
-	num_L_list = [int(x[0]) for x in L_list]
-	L_str_list = [str(x) for x in num_L_list]
-	demo_hd_few = np.transpose(np.squeeze(testing_data[0:3]), axes=(0, 2, 1))
-	demo_hs_few = np.transpose(np.squeeze(testing_data[(te_half_size+3):(te_half_size+6)]), axes=(0, 2, 1))
+    # display some of the singlet and dublet MR images ---------------------------------------------------------------------------------------------------------------------------
+    # signal array length = signal list as cmd input [L_list] 
+    # i.e., L_list is the index of signal array lengths as input
+    num_L_list = [int(x[0]) for x in L_list]
+    sig_L_list = np.empty(te_tot_size, dtype=int)
+    sig_L_list = [signal_L[x] for x in num_L_list]
 
-	# print('signal separation length list:', L_str_list)
-	utils.multi2dplots(1, 3, demo_hd_few[:, ::-1, :], axis=0, passed_fig_att={'colorbar': False, 'suptitle':'L_list', 'split_title': L_str_list[0:3], 'figsize': [12, 5]})
-	utils.multi2dplots(1, 3, demo_hs_few[:, ::-1, :], axis=0, passed_fig_att={'colorbar': False, 'suptitle':'L_list', 'split_title': L_str_list[te_half_size+3:(te_half_size+6)], 'figsize': [12, 5]})
-
+    sig_L_list_str = [str(x) for x in sig_L_list]
+    
+    demo_hd_few = np.transpose(np.squeeze(testing_data[0:3]), axes=(0, 2, 1))
+    demo_hs_few = np.transpose(np.squeeze(testing_data[(te_half_size+3):(te_half_size+6)]), axes=(0, 2, 1))
+    # print(signal_L, type(signal_L))
+    # print('signal separation length list (index):', num_L_list)
+    # print('signal separation length list (int):', sig_L_list)
+    # print('signal separation length list (str):', sig_L_list_str)
+    utils.multi2dplots(1, 3, demo_hd_few[:, ::-1, :], axis=0, passed_fig_att={'colorbar': False, 'suptitle':'signal length (in px)', 'split_title': sig_L_list_str[0:3], 'figsize': [12, 5]})
+    utils.multi2dplots(1, 3, demo_hs_few[:, ::-1, :], axis=0, passed_fig_att={'colorbar': False, 'suptitle':'signal length (in px)', 'split_title': sig_L_list_str[te_half_size+3:(te_half_size+6)], 'figsize': [12, 5]})
 # save objects with signal insertions into an HDF5 files ----------------------------------------------------------------------------------------------------------------------------
 print("\nSaving to-be-imaged SOMs with singlet and doublet signals to an HDF5 file: " + output_path \
       + "test_gt_acc" + str(acceleration) + "_rsos.hdf5", 'with dtype set as', cmpr_dtype)

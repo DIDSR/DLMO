@@ -22,7 +22,7 @@ Examples:
 python rsos_ddpm_test.py 4
 ```
 
-Input files are .hdf5 files obtained from Demo 2. The reconstructed images are saved in HDF5 format
+Input files to this demo run are .hdf5 files obtained from Demo 2. The reconstructed images are saved in HDF5 format
 in the ./rsos_rec/ folder. Each HDF5 file contains the following datasets: H_s for singlet image
 reconstructions, H_d for doublet image reconstructions, and L_list for the signal lengths
 corresponding to each reconstructed image.

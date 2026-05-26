@@ -106,7 +106,7 @@ for acc in [acceleration]:
         mask_dir = "masks/mask_Poisson_" + str(acc) + "_fold.npy"
         mask = np.load(mr_acq_path + mask_dir)  # shape of (260, 311)
         if display_plot:
-            utils.plot2dlayers(np.rot90(np.abs(mask)), title='Possion disk-based subsampling pattern for '\
+            utils.plot2dlayers(np.rot90(np.abs(mask)), title='Poisson  disk-based subsampling pattern for '\
                                +str(acc)+'x', colorbar=True, figsize=(6.4, 5.8))
         mask = np.reshape(mask, (1, 1, dim1, dim2))
         mask = torch.tensor(mask, dtype=torch.complex64)
@@ -183,7 +183,7 @@ if acc > 1:
         cur_testing_data[batch_index * batch_size:(1 + batch_index) * batch_size,:,:,:] = local_batch_cat.cpu()
 
     if display_plot: 
-        plot_arr = cur_testing_data[(te_half_size-1):(te_half_size+1),0, ::-1, :]
+        plot_arr = cur_testing_data[(te_half_size-1):(te_half_size+1),0, :, :]
         utils.multi2dplots(1, 2, np.rot90(plot_arr, k=1, axes=(1,2)), 0, \
         passed_fig_att={'suptitle':'reconstructed SOM examples with signals at 1x', \
                         'split_title': ['Doublet SOM', 'Singlet SOM'], \

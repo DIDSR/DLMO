@@ -202,7 +202,8 @@ with tqdm(total=len(test_loader),
 
 
 if args.model_name == 'unet':
-    utils.multi2dplots(1, 2, preds[(test_half_size-1):(test_half_size+1), :, :], 0, \
+    plot_arr =preds[(test_half_size-1):(test_half_size+1), :, :]
+    utils.multi2dplots(1, 2, np.rot90(plot_arr, k=1, axes=(1,2)), 0, \
                 passed_fig_att={'suptitle':'reconstructed SOM examples with signals at '+str(acceleration)+'x', \
                                 'split_title': ['Unet on Doublet SOM', 'Unet on Singlet SOM'], \
                                 'figsize': [10, 4]})

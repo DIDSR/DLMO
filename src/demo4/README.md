@@ -8,7 +8,11 @@ Note that in our [DLMO paper](https://arxiv.org/abs/2602.22535), the total numbe
 
 Also note that the pretrained weights provided in this repository were obtained using the Horovod-based training script (`train_dlmo_hvd.py`). However, you can also train from scratch or fine-tune the model without requiring the Horovod package by using `train_dlmo.py`.
 
-Main components:
+## Getting input-target labels for training DLMOs for different acceleration factors
+
+For a given acceleration factor, only signal intensity–signal length combinations for which the reader achieved 100% 2AFC accuracy, as shown in the 2AFC table in [demo2](https://github.com/DIDSR/DLMO/tree/main/src/demo2) , were included in the DLMO training set for that acceleration factor. This criterion was used to avoid training DLMO on signal conditions that are formally labeled as singlets or doublets at insertion but are not reliably discriminable by human readers under the corresponding imaging and reconstruction conditions.
+
+## Main components of the DLMO training script:
 
   1. Argument parsing and setup
   2. Data loading (training and validation)
@@ -16,7 +20,8 @@ Main components:
   4. Training and tuning
   5. Checkpoint saving and logging
 
-Usage (without horovod build):
+## Usage (without horovod build):
+
 ```
 python dlmo_train.py [-h] [--acceleration ACCELERATION] [--train-data-path TRAIN_DATA_PATH] [--val-data-path VAL_DATA_PATH]
                     [--output-path OUTPUT_PATH] [--pretrained-model-path PRETRAINED_MODEL_PATH]

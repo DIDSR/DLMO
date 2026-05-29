@@ -95,3 +95,11 @@ The script then:
 6. Computes the DLMO-human difference and its confidence interval.
 
 When adapting this script to a new experiment, replace the DLMO AUC and variance values with those estimated from your DLMO test-statistic outputs for the matching reconstruction method and acceleration factor.
+
+## Notes for adapting the study
+
+- Keep singlet and doublet images matched within each 2AFC pair except for signal type.
+- Randomize display order to avoid positional bias.
+- Use independent case assignments when implementing a split-plot design.
+- If multiple reconstruction methods or acceleration factors are tested, account for multiplicity when interpreting the similarity tests. [Our DLMO paper](https://arxiv.org/abs/2602.22535) used Bonferroni correction across the four reconstruction-method and acceleration-factor conditions.
+- For a new study, perform a pilot reader study and sample-size calculation before the pivotal validation study.

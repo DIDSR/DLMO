@@ -6,7 +6,7 @@ This demo also includes supporting material in `sample_size_4rm_pilot_study/` an
 
 # [*Sample size determination*](http://github.com/DIDSR/DLMO/tree/main/src/demo6/sample_size_4rm_pilot_study)
 
-This script performs sample size determination for a split-plot design, as detailed in Section IV in the [supplementary material](https://arxiv.org/src/2602.22535v1/anc/DLMO_supp.pdf) of our [DLMO paper](https://arxiv.org/abs/2602.22535). To run the script, simply execute `sample_size_est_BDG.R`. To use your own pilot data, replace `pilot_data.csv` with your dataset following the same format, and update the DLMO proportion correct and its variance in `sample_size_est_BDG.R`.
+This script performs sample size determination for a split-plot design, as detailed in Section IV in the supplementary material of our [DLMO paper](https://arxiv.org/abs/2602.22535). To run the script, simply execute `sample_size_est_BDG.R`. To use your own pilot data, replace `pilot_data.csv` with your dataset following the same format, and update the DLMO proportion correct and its variance in `sample_size_est_BDG.R`.
 
 # [*Pivotal study*](https://github.com/DIDSR/DLMO/tree/main/src/demo6/pivotal_study)
 

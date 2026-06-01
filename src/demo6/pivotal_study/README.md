@@ -35,7 +35,10 @@ For each acceleration factor, reconstruction method, signal intensity, and signa
 
 A practical trial instruction for the reader is:
 
-> In each trial, two images are displayed. One image contains a singlet signal and the other contains a doublet signal. Please select the image that contains the doublet signal. You may also provide a confidence score if the reader-study interface supports it.
+<p align="center">
+      <img src="../../docs/pics/2AFC_trail.png"  width="600">
+      <br> An example 2AFC trial in which an image pair is displayed to a reader. One image contains a singlet signal and the other contains a doublet signal. The reader is asked to select the image containing the doublet signal. The reader may also provide a confidence score if the reader-study interface supports it
+</p>
 
 The study may be implemented using any 2AFC reader-study interface. In [our DLMO paper](https://arxiv.org/abs/2602.22535), we used a [web-based 2AFC application](https://rad-apps.mir.wustl.edu/twoafc). The present repository only stores the resulting reader scores and performs the iMRMC-based similarity analysis; it does not provide the reader-study web interface.
 

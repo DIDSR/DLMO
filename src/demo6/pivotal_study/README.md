@@ -33,10 +33,8 @@ For each acceleration factor, reconstruction method, signal intensity, and signa
 4. Assign each pair to a single reader when using a split-plot design. In [our DLMO paper](https://arxiv.org/abs/2602.22535), cases were non-overlapping across the four readers.
 5. Blind the reader to the correct answer, reconstruction method, and any information that could reveal whether an image contains a singlet or doublet signal.
 
-A practical trial instruction for the reader is:
-
 <p align="center">
-      <img src="../../docs/pics/2AFC_trail.png"  width="600">
+      <img src="../../../docs/pics/2AFC_trial.png"  width="600">
       <br> An example 2AFC trial in which an image pair is displayed to a reader. One image contains a singlet signal and the other contains a doublet signal. The reader is asked to select the image containing the doublet signal. The reader may also provide a confidence score if the reader-study interface supports it
 </p>
 
@@ -97,12 +95,12 @@ The script then:
 5. Loads the corresponding DLMO AUC and variance from the `DLMO reading results` block.
 6. Computes the DLMO-human difference and its confidence interval.
 
-When adapting this script to a new experiment, replace the DLMO AUC and variance values with those estimated from your DLMO test-statistic outputs for the matching reconstruction method and acceleration factor.
+When adapting this script to a new experiment, replace the DLMO, AUC and variance values with those estimated from your DLMO test-statistic outputs for the matching reconstruction method and acceleration factor.
 
 ## Notes for adapting the study
 
-- Keep singlet and doublet images matched within each 2AFC pair except for signal type.
-- Randomize display order to avoid positional bias.
-- Use independent case assignments when implementing a split-plot design.
-- If multiple reconstruction methods or acceleration factors are tested, account for multiplicity when interpreting the similarity tests. [Our DLMO paper](https://arxiv.org/abs/2602.22535) used Bonferroni correction across the four reconstruction-method and acceleration-factor conditions.
-- For a new study, perform a pilot reader study and sample-size calculation before the pivotal validation study.
+1. Keep singlet and doublet images matched within each 2AFC pair except for signal type.
+2. Randomize display order to avoid positional bias.
+3. Use independent case assignments when implementing a split-plot design.
+4. If multiple reconstruction methods or acceleration factors are tested, account for multiplicity when interpreting the similarity tests. [Our DLMO paper](https://arxiv.org/abs/2602.22535) used Bonferroni correction across the four reconstruction-method and acceleration-factor conditions.
+5. For a new study, perform a pilot reader study and sample-size calculation before the pivotal validation study.

@@ -3,7 +3,7 @@ This use-case demo illustrates **DLMO (Deep Learning Model Observer)**-based ass
 
 The signal content can be adapted to a signal-present versus signal-absent configuration for detection tasks, as described in the [CNN-IO paper](https://pmc.ncbi.nlm.nih.gov/articles/PMC11774454/). The same DLMO framework can also be applied to other acquisition settings and reconstruction methods.
 
-![Evaluation using the DLMO framework](docs/github_fig1.png "Evaluation using the DLMO framework")
+![Evaluation using the DLMO framework](docs/pics/dlmo_illustration.png "Evaluation using the DLMO framework")
 
 ## Requirements
 

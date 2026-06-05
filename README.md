@@ -7,7 +7,7 @@ The signal content can be adapted to a signal-present versus signal-absent confi
 
 ## Requirements
 
-To run the DLMO codes, begin by installing it from the following Github repository:
+To run the DLMO code, begin by cloning the following GitHub repository: 
 ```
 git clone https://github.com/DIDSR/DLMO.git
 ```

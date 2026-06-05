@@ -1,6 +1,6 @@
 # A simple example on the application of DLMO
 
-This demo uploads pretrained weights and DDPM-generated objects(SOMs) uploaded in this repository and walks through previous demos (demo2, demo3) to demostrate the application of DLMO observer model to get the descrimination-based output relative to different MR reconstruction methods (for a use case study of acceleration factor by 4). It contains four parts that should be run in order:
+This demo uploads pretrained weights and DDPM-generated objects(SOMs) uploaded in this repository and walks through previous demos (demo2, demo3) to demostrate the application of DLMO observer model for obtaining discrimination-task outputs relative to different MR reconstruction methods (for a use case study of acceleration factor by 4). It contains four parts that should be run in order:
 
 1. [*Synthetic defect insertion*](https://github.com/DIDSR/DLMO/tree/main/src/demo2)
 
@@ -28,16 +28,16 @@ This demo uploads pretrained weights and DDPM-generated objects(SOMs) uploaded i
 
 4. [*DLMO testing*](https://github.com/DIDSR/DLMO/tree/main/src/demo5/DLMO_test)
 
-   Apply model observers to the three HDF5 files from Steps 1-3 for the three different reconstruction.
+   Apply model observers to the three HDF5 files from Steps 1-3 for the three different reconstructions.
    
-   #### DLMO on accelearated rSOS(4x) reconstruction 
+   #### DLMO on accelerated rSOS(4x) reconstruction 
    ```
    cd ../DLMO_test
    python dlmo_test.py --task rayleigh --test-path ../../demo3/rsos_rec --acceleration 4 \
    --batch-size 10 --pretrained-model-path trained_model/mri_cnn_dlmo_acc_4_hvd --pretrained-model-epoch 50
    ```
 
-   #### DLMO on accelearated UNet(4x) reconstruction
+   #### DLMO on accelerated UNet(4x) reconstruction
    ``` 
    python dlmo_test.py --task rayleigh --test-path ../AI_rec/ai_rec --cnn-denoiser-name unet \
    --acceleration 4 --batch-size 10 --pretrained-model-path trained_model/mri_cnn_dlmo_acc_4_unet_hvd \

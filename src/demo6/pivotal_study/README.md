@@ -95,7 +95,9 @@ The script then:
 5. Loads the corresponding DLMO AUC and variance from the `DLMO reading results` block.
 6. Computes the DLMO-human difference and its confidence interval.
 
-When adapting this script to a new reconstruction method, the DLMO should be appropriately retrained or retuned for that method. The AUC and variance values should be replaced with estimates derived from the DLMO test statistic outputs corresponding to the new reconstruction method and the acceleration factor under evaluation. Similarly, the 2AFC human reader–based AUCcling
+When adapting this script to a new reconstruction method, the DLMO should be appropriately retrained or retuned for that method. The AUC and variance values should be replaced with estimates derived from the DLMO test statistic outputs corresponding to the new reconstruction method and the acceleration factor under evaluation. Similarly, the 2AFC human reader–based AUC and variance values should likewise correspond to the new reconstruction method and the same acceleration factor
+
+## Final comments on adapting the 2AFC study and DLMO testing
 
 1. Keep singlet and doublet images matched within each 2AFC pair except for signal type.
 2. Randomize display order to avoid positional bias.

@@ -27,7 +27,7 @@ For each condition, each image pair should contain a singlet and doublet image w
 
 For each acceleration factor, reconstruction method, signal intensity, and signal length:
 
-1. Generate singlet and doublet image pairs. The two images in each pair (corresponding to a single 2AFC case) should have the same signal intensity, signal length, acceleration factor, and reconstruction method. They should differ only in signal type. In our 2AFC experiment, the image pairs also differed in their backgrounds, as shown in the image below.
+1. Generate singlet and doublet image pairs. The two images in each pair (corresponding to a single 2AFC case) should have the same signal intensity, signal length, acceleration factor, and reconstruction method. They should differ only in signal type. In our 2AFC experiment, the image pairs also differed in their backgrounds, as shown in the image below. It will also work if the same background is used when generating the singlet and doublet image pair for each 2AFC case.
 2. Randomize the left/right or first/second display order for singlet and doublet images.
 3. Record the correct answer for each pair, i.e., which displayed image contains the doublet signal.
 4. Assign each pair to a single reader when using a split-plot design. In [our DLMO paper](https://arxiv.org/abs/2602.22535), cases were non-overlapping across the four readers.
